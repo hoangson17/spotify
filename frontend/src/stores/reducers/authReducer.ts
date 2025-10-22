@@ -1,4 +1,5 @@
-// src/stores/reducers/authReducer.js
+import actionTypes from "../actions/actionTypes";
+
 const initialState = {
   user: null,
   accessToken: null,
@@ -10,10 +11,10 @@ const initialState = {
 
 const authReducer = (state = initialState, action: any) => {
   switch (action.type) {
-    case "LOGIN_REQUEST":
+    case actionTypes.LOGIN_REQUEST:
       return { ...state, loading: true, error: null };
 
-    case "LOGIN_SUCCESS":
+    case actionTypes.LOGIN_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -23,16 +24,16 @@ const authReducer = (state = initialState, action: any) => {
         refreshToken: action.payload.refreshToken,
       };
 
-    case "LOGIN_FAILURE":
+    case actionTypes.LOGIN_FAILURE:
       return { ...state, loading: false, error: action.payload };
 
-    case "LOGOUT":
+    case actionTypes.LOGOUT:
       return { ...initialState };
 
-    case "SET_PROFILE":
+    case actionTypes.SET_PROFILE:
       return { ...state, user: action.payload };
 
-    case "REFRESH_TOKEN":
+    case actionTypes.REFRESH_TOKEN:
       return { ...state, accessToken: action.payload };
 
     default:

@@ -40,15 +40,15 @@ export const loginWithGoogle = (accessTokenFromGoogle: string) => async (dispatc
 export const logout = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
-  return { type: "LOGOUT" };
+  return { type: actionTypes.LOGOUT };
 };
 
 export const refreshAccessToken = (token:any) => ({
-  type: "REFRESH_TOKEN",
+  type:  actionTypes.REFRESH_TOKEN,
   payload: token,
 });
 
 export const setProfile = (data:any) => ({
-  type: "SET_PROFILE",
+  type: actionTypes.SET_PROFILE,
   payload: data,
 });
