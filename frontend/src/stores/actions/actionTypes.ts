@@ -1,0 +1,10 @@
+const actionTypes = {
+    LOGIN_REQUEST: 'LOGIN_REQUEST',
+    LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+    LOGIN_FAILURE: 'LOGIN_FAILURE',
+    LOGOUT: 'LOGOUT',
+    SET_PROFILE: 'SET_PROFILE',
+    REFRESH_TOKEN: 'REFRESH_TOKEN',
+}
+
+export default actionTypes
