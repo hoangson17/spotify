@@ -1,4 +1,3 @@
-import { Delete } from '@nestjs/common';
 import {
   Column,
   DeleteDateColumn,
@@ -9,32 +8,37 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Track } from './track.entity';
+import { Album } from './album.entity';
 import { Follower } from './follower.entity';
-import { LikedTrack } from './liked_tracks.entity';
 
-@Entity('users')
-export class User {
+@Entity('artists')
+export class Artist {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({
     type: 'varchar',
-    length: 30,
+    length: 40,
   })
   name: string;
 
   @Column({
-    type: 'varchar',
-    length: 100,
-    unique: true,
+    type: 'text',
+    nullable: true,
   })
-  email: string;
+  bio: string;
 
-  @ManyToMany(() => Track, (track) => track.users)
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  avatar: string;
+
+  @ManyToMany(() => Track, (track) => track.artists)
   @JoinTable({
-    name: 'liked_tracks',
+    name: 'artist_track',
     joinColumn: {
-      name: 'user_id',
+      name: 'artist_id',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
@@ -44,40 +48,30 @@ export class User {
   })
   tracks: Track[];
 
-  @OneToMany(() => Follower, (follower) => follower.follower)
-  following: Follower[];
+  @OneToMany(() => Album, (album) => album.artist)
+  albums: Album[];
 
-  @OneToMany(() => Follower, (follower) => follower.following_id)
+  @OneToMany(() => Follower, (follower) => follower.artist)
   followers: Follower[];
-
-  @OneToMany(() => LikedTrack, (likedTrack) => likedTrack.user)
-  likedTracks: LikedTrack[];
 
   @Column({
     type: 'varchar',
     length: 100,
     nullable: true,
   })
-  password: string;
-
-  @Column({
-    type: 'text',
-    nullable: true,
-  })
-  avatar: string;
+  country: string;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  created_at: string;
+  created_at: Date;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
   })
-  updated_at: string;
+  updated_at: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;

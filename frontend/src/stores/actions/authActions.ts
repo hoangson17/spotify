@@ -1,15 +1,15 @@
-import axiosInstance from "../../axiosConfig";
 import actionTypes from "./actionTypes";
+import { authService } from "../../services/authService";
 
-export const login = (email: string, password:string) => async (dispatch : any) => {
+export const login = (email: string, password: string) => async (dispatch: any) => {
   dispatch({ type: actionTypes.LOGIN_REQUEST });
   try {
-    const res = await axiosInstance.post(`/auth/login`, { email, password });
-    dispatch({ type: actionTypes.LOGIN_SUCCESS, payload: res.data });
+    const res = await authService.login(email, password);
 
-    localStorage.setItem("accessToken", res.data.accessToken);
-    localStorage.setItem("refreshToken", res.data.refreshToken);
-  } catch (err:any) {
+    authService.saveTokens(res.data.accessToken, res.data.refreshToken);
+
+    dispatch({ type: actionTypes.LOGIN_SUCCESS, payload: res.data });
+  } catch (err: any) {
     dispatch({
       type: actionTypes.LOGIN_FAILURE,
       payload: err.response?.data?.message || "Login failed",
@@ -17,19 +17,15 @@ export const login = (email: string, password:string) => async (dispatch : any) 
   }
 };
 
-export const loginWithGoogle = (accessTokenFromGoogle: string) => async (dispatch:any) => {
+export const loginWithGoogle = (accessTokenFromGoogle: string) => async (dispatch: any) => {
   dispatch({ type: actionTypes.LOGIN_REQUEST });
   try {
-    const res = await axiosInstance.post(`/auth/google/callback`, {
-      accessToken: accessTokenFromGoogle,
-    });
+    const res = await authService.loginWithGoogle(accessTokenFromGoogle);
 
-    // Lưu token
-    localStorage.setItem("accessToken", res.data.accessToken);
-    localStorage.setItem("refreshToken", res.data.refreshToken);
+    authService.saveTokens(res.data.accessToken, res.data.refreshToken);
 
     dispatch({ type: actionTypes.LOGIN_SUCCESS, payload: res.data });
-  } catch (err:any) {
+  } catch (err: any) {
     dispatch({
       type: actionTypes.LOGIN_FAILURE,
       payload: err.response?.data?.message || "Google login failed",
@@ -38,17 +34,16 @@ export const loginWithGoogle = (accessTokenFromGoogle: string) => async (dispatc
 };
 
 export const logout = () => {
-  localStorage.removeItem("accessToken");
-  localStorage.removeItem("refreshToken");
+  authService.logout();
   return { type: actionTypes.LOGOUT };
 };
 
-export const refreshAccessToken = (token:any) => ({
-  type:  actionTypes.REFRESH_TOKEN,
+export const refreshAccessToken = (token: any) => ({
+  type: actionTypes.REFRESH_TOKEN,
   payload: token,
 });
 
-export const setProfile = (data:any) => ({
+export const setProfile = (data: any) => ({
   type: actionTypes.SET_PROFILE,
   payload: data,
 });

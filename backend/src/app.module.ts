@@ -5,6 +5,11 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './modules/auth/auth.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { ArtistsModule } from './modules/artists/artists.module';
+import { PlaylistModule } from './modules/playlist/playlist.module';
+import { AlbumModule } from './modules/album/album.module';
+import { TrackModule } from './modules/track/track.module';
+import { UserModule } from './modules/user/user.module';
 
 
 @Module({
@@ -21,6 +26,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: process.env.DB_NODE_ENV === 'development' || !process.env.DB_NODE_ENV,
+      logging:true,
       autoLoadEntities: true,
     }),
     RedisModule.forRoot({
@@ -28,6 +34,11 @@ import { RedisModule } from '@nestjs-modules/ioredis';
       url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     }),
     AuthModule,
+    ArtistsModule,
+    PlaylistModule,
+    AlbumModule,
+    TrackModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
