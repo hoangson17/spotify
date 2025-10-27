@@ -10,7 +10,7 @@ import {
 import { Track } from './track.entity';
 import { Album } from './album.entity';
 import { Follower } from './follower.entity';
-
+ 
 @Entity('artists')
 export class Artist {
   @PrimaryGeneratedColumn()
@@ -76,3 +76,4 @@ export class Artist {
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 }
+ 

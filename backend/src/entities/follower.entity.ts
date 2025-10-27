@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Artist } from './artist.entity';
-
+ 
 @Entity('followers')
 export class Follower {
   @PrimaryGeneratedColumn()
@@ -34,3 +34,4 @@ export class Follower {
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 }
+ 

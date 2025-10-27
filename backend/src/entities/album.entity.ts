@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Artist } from './artist.entity';
 import { Track } from './track.entity';
-
+ 
 @Entity('albums')
 export class Album {
   @PrimaryGeneratedColumn()
@@ -54,3 +54,4 @@ export class Album {
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 }
+ 

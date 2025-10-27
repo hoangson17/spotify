@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { Track } from './track.entity';
 import { Follower } from './follower.entity';
-import { LikedTrack } from './liked_tracks.entity';
+import { Playlist } from './playlist.entity';
 
 @Entity('users')
 export class User {
@@ -43,16 +43,16 @@ export class User {
     },
   })
   tracks: Track[];
-
+ 
   @OneToMany(() => Follower, (follower) => follower.follower)
   following: Follower[];
 
   @OneToMany(() => Follower, (follower) => follower.following_id)
   followers: Follower[];
 
-  @OneToMany(() => LikedTrack, (likedTrack) => likedTrack.user)
-  likedTracks: LikedTrack[];
-
+  @OneToMany(() => Playlist,(playlist) => playlist.user_id)
+  playlists: Playlist[];
+   
   @Column({
     type: 'varchar',
     length: 100,
@@ -82,3 +82,4 @@ export class User {
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 }
+ 
