@@ -22,16 +22,16 @@ export class Track {
   })
   title: string;
 
-  @ManyToOne(() => Album, (album) => album.tracks)
+  @ManyToOne(() => Album, (album) => album.tracks,{onDelete: 'CASCADE'})
   album: Album;
 
-  @ManyToMany(() => Artist, (artist) => artist.tracks)
+  @ManyToMany(() => Artist, (artist) => artist.tracks,{onDelete: 'CASCADE'})
   artists: Artist[];
 
-  @ManyToMany(() => Playlist, (playlist) => playlist.tracks)
+  @ManyToMany(() => Playlist, (playlist) => playlist.tracks,{onDelete: 'CASCADE'})
   playlists: Playlist[];
 
-  @ManyToMany(() => User, (user) => user.tracks)
+  @ManyToMany(() => User, (user) => user.tracks,{onDelete: 'CASCADE'})
   users: User[];
  
   @Column({

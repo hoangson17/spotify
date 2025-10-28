@@ -1,17 +1,18 @@
-// src/redux/reducers/rootReducer.js
 import { combineReducers } from "redux";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import authReducer from "./authReducer";
+import trackReducer from "./trackReducer";
 
-const persistConfig = {
+const authPersistConfig = {
   key: "auth",
   storage,
-  whitelist: ["auth"], // chỉ lưu auth
+  whitelist: ["user", "isAuthenticated"], 
 };
 
 const rootReducer = combineReducers({
-  auth: authReducer,
+  auth: persistReducer(authPersistConfig, authReducer),
+  tracks: trackReducer,
 });
 
-export default persistReducer(persistConfig, rootReducer);
+export default rootReducer;

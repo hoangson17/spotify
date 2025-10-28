@@ -31,7 +31,7 @@ const {
 const Header: React.FC = () => {
   const dispatch = useDispatch();
   const auth = useSelector((state: any) => state.auth);
-  console.log(auth);
+  // console.log(auth);
 
   const handleLogout = () => {
     dispatch({ type: "LOGOUT" });

@@ -5,6 +5,10 @@ const actionTypes = {
     LOGOUT: 'LOGOUT',
     SET_PROFILE: 'SET_PROFILE',
     REFRESH_TOKEN: 'REFRESH_TOKEN',
+
+    GET_TRACKS_SUCCESS: "GET_TRACKS_SUCCESS",
+    GET_TRACKS_FAIL: "GET_TRACKS_FAIL",
+    GET_TRACKS_ERROR: "GET_TRACKS_ERROR",
 }
 
 export default actionTypes

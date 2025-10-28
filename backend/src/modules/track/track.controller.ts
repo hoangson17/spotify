@@ -6,8 +6,13 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { TrackService } from './track.service';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/config/multer.config';
 
 @Controller('track')
 export class TrackController {
@@ -23,10 +28,26 @@ export class TrackController {
     return this.trackService.findOne(id);
   }
 
-  @Post()
-  create(@Body() data: any) {
-    return this.trackService.create(data);
+@Post()
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'audio', maxCount: 1 },
+        { name: 'image', maxCount: 1 },
+      ],
+      multerConfig,
+    ),
+  )
+  create(
+    @Body() data: any,
+    @UploadedFiles()
+    files: { audio?: Express.Multer.File[]; image?: Express.Multer.File[] },
+  ) {
+    const audio = files.audio?.[0];
+    const image = files.image?.[0];
+    return this.trackService.create(data, image, audio);
   }
+
 
   @Patch(':id')
   update(@Param('id') id: number, @Body() data: any) {

@@ -231,6 +231,8 @@ export class AuthService {
     )
     await this.redis.keys(`jwt_refresh_*`)
 
+    delete (user as any).password;
+
     return {
       accessToken:token,
       refreshToken,

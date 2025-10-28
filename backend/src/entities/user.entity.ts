@@ -50,7 +50,7 @@ export class User {
   @OneToMany(() => Follower, (follower) => follower.following_id)
   followers: Follower[];
 
-  @OneToMany(() => Playlist,(playlist) => playlist.user_id)
+  @OneToMany(() => Playlist,(playlist) => playlist.users)
   playlists: Playlist[];
    
   @Column({

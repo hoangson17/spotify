@@ -24,7 +24,7 @@ export class PlaylistService {
     async create(data: any){
         const {user_id} = data;
         const user = await this.userRepository.findOne({where: {id: user_id}});
-        console.log(user);
+        // console.log(user);
         if (!user) throw new NotFoundException('User not found');
         console.log("data : ",data);
         
