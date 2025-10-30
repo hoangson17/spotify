@@ -1,5 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { AlbumService } from './album.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/config/multer.config';
 
 @Controller('album')
 export class AlbumController {
@@ -21,13 +23,15 @@ export class AlbumController {
   }
   
   @Post()
-  create(@Body() data: any) {
-    return this.albumService.create(data);
+  @UseInterceptors(FileInterceptor('avatar', multerConfig))
+  create(@Body() data: any, @UploadedFile() file: Express.Multer.File) {
+    return this.albumService.create(data, file);
   }
 
   @Patch(':id')
-  update(@Param('id') id: number, @Body() data: any) {
-    return this.albumService.update(id, data);
+  @UseInterceptors(FileInterceptor('cover_image', multerConfig)) //avatar tên field trong request
+  update(@Param('id') id: number, @Body() data: any, @UploadedFile() file: Express.Multer.File) {
+    return this.albumService.update(id, data, file);
   }
 
   @Delete(':id')

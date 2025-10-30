@@ -40,16 +40,16 @@ const Header: React.FC = () => {
   return (
     <header className="bg-[#000000] h-[64px] flex items-center justify-between px-4">
       <div className="flex items-center gap-3">
-        <FaSpotify fontSize={38} className="text-white" />
+        <Link to="/" ><FaSpotify fontSize={38} className="text-white ml-[11px]" /></Link>
       </div>
 
       <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
-        <Button
+        <Link to="/" ><Button
           variant="ghost"
-          className="rounded-full h-[48px] w-[48px] flex items-center justify-center bg-[#1f1f1f] hover:bg-[#2a2a2a] transition"
+          className="rounded-full h-[48px] w-[48px] flex items-center justify-center bg-[#1f1f1f] hover:bg-[#2a2a2a] transition cursor-pointer"
         >
           <GoHomeFill className="text-white" size={22} />
-        </Button>
+        </Button></Link>
 
         <div className="flex items-center bg-[#1f1f1f] rounded-full h-[48px] w-[400px] px-3 focus-within:ring-2 focus-within:ring-[#1DB954] transition">
           <CiSearch className="text-white" size={22} />

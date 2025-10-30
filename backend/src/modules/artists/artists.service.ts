@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { join } from 'path';
 import { Artist } from 'src/entities/artist.entity';
 import { Track } from 'src/entities/track.entity';
 import { Repository } from 'typeorm';
+import * as fs from 'fs';
 
 @Injectable()
 export class ArtistsService {
@@ -24,11 +26,33 @@ export class ArtistsService {
     });
   }
 
-  async create(data: any) {
+  async create(data: any, image?: Express.Multer.File) {
+    if(image){ 
+      if(image.mimetype.startsWith('image/')) data.avatar = `http://localhost:3000/uploads/images/${image.filename}`
+      else throw new Error('Invalid file type');
+    }
     return await this.artistRepository.save(data);
   }
 
-  async update(id: number, data: any) {
+  async update(id: number, data: any, image?: Express.Multer.File) {
+    const artist = await this.artistRepository.findOne({ where: { id } });
+    if (!artist) throw new NotFoundException('Artist not found');
+    if(image){
+      if(artist.avatar){
+        try{
+          const oldFileName = artist.avatar.split('/uploads/')[1];
+          const oldFilePath = join(process.cwd(), `uploads`, oldFileName);
+          if(fs.existsSync(oldFilePath)){
+            fs.unlinkSync(oldFilePath);
+            console.log('file deleted', oldFilePath);
+          }
+        }catch(err){
+          console.warn("lỗi xóa ảnh cũ", err);
+        }
+      }
+      if(image.mimetype.startsWith('image/')) data.avatar = `http://localhost:3000/uploads/images/${image.filename}`
+      else throw new Error('Invalid file type');
+    }
     await this.artistRepository.update(id, data);
     return this.findOne(id);
   }

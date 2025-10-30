@@ -53,6 +53,7 @@ export class Playlist {
 
   @Column({
     type: 'tinyint',
+    default: 1,
   })
   is_public: number;
 

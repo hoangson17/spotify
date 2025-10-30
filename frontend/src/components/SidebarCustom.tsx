@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import React, { useState } from "react";
 import { FaPlus, FaMusic } from "react-icons/fa";
 import { GoHomeFill } from "react-icons/go";
@@ -20,8 +21,9 @@ const SidebarCustom = () => {
         }`}
       >
         {/* Header */}
-        <div className="flex items-center h-[64px] px-4 gap-3 border-b border-[#1f1f1f]">
-          <button
+        <div className="flex items-center justify-between h-[64px] px-4 gap-3 border-b border-[#1f1f1f]">
+          <div className="flex items-center">
+            <button
             className="p-2 rounded hover:bg-[#1f1f1f] transition flex-shrink-0"
             onClick={() => setCollapsed(!collapsed)}
           >
@@ -34,8 +36,14 @@ const SidebarCustom = () => {
           >
             Your Library
           </span>
+          </div>
+          <button
+            className="p-1 rounded-full hover:bg-[#3f3f3f] bg-[#1f1f1f] transition flex-shrink-0 cursor-pointer"
+          >
+            <Plus size={24} /> 
+          </button>
         </div>
-
+        
         {/* Menu */}
         <nav className="flex-1 mt-2">
           <ul>

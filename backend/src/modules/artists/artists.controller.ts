@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ArtistsService } from './artists.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from 'src/config/multer.config';
 
 @Controller('artists')
 export class ArtistsController {
@@ -16,13 +18,15 @@ export class ArtistsController {
   }
 
   @Post()
-  create(@Body() data: any) {
-    return this.artistsService.create(data);
+  @UseInterceptors(FileInterceptor('avatar',multerConfig))
+  create(@Body() data: any,@UploadedFile() file: Express.Multer.File) {
+    return this.artistsService.create(data,file);
   }
 
   @Patch('/:id')
-  update(@Param('id') id: number, @Body() data: any) {
-    return this.artistsService.update(id, data);
+  @UseInterceptors(FileInterceptor('avatar',multerConfig))
+  update(@Param('id') id: number, @Body() data: any,@UploadedFile() file: Express.Multer.File) {
+    return this.artistsService.update(id, data, file);
   }
 
   @Patch('/:id')
