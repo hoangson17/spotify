@@ -4,7 +4,7 @@ import { trackService } from "../../services/trackService";
 export const getTracks = () => async (dispatch: any) => {
   try {
     const response = await trackService.getAllTracks();
-    console.log( response );
+    // console.log( response );
     if (response?.status === 200) {
       dispatch({
         type: actionTypes.GET_TRACKS_SUCCESS,

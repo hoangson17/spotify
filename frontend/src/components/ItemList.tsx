@@ -8,6 +8,7 @@ interface ItemListProps {
   avatar?: string;
   name?: string;
   audio_url?: string;
+  cover_image?: string;
 }
 
 const ItemList = () => {

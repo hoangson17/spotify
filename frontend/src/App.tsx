@@ -10,7 +10,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />}>
             <Route index element={<HomePage />} />
-            <Route path="/playlist" element={<Playlist />} />
+            <Route path="/playlist/:id" element={<Playlist />} />
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/auth/google/callback" element={<Google />} />
