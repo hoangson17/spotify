@@ -7,6 +7,7 @@ import artistReducer from "./artistReducer";
 import playerReducer from "./playerReducer";
 import playlistReducer from "./playlistReducer";
 import albumReducer from "./albumReducer";
+import searchReducer from "./searchReducer";
 
 const authPersistConfig = {
   key: "auth",
@@ -20,7 +21,8 @@ const rootReducer = combineReducers({
   artists: artistReducer,
   player: playerReducer,
   playlist: playlistReducer,
-  albums: albumReducer
+  albums: albumReducer,
+  search: searchReducer
 });
 
 export default rootReducer;

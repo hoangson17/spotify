@@ -1,12 +1,12 @@
-import  AxiosInstance  from "../axiosConfig";
+import  axiosInstance  from "../axiosConfig";
 
 export const playlistService = {
     getPlaylist: async () => {
-        const response = await AxiosInstance.get(`/playlist`);
+        const response = await axiosInstance.get(`/playlist`);
         return response;
     },
     getPlaylistById: async (id: number) => {
-        const response = await AxiosInstance.get(`/playlist/${id}`);
+        const response = await axiosInstance.get(`/playlist/${id}`);
         return response;
     },
 }

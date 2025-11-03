@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Home, HomePage, Login, Playlist } from "./Page/Public";
+import { Album, Artist, Home, HomePage, Login, Playlist, Search } from "./Page/Public";
 import { Route, Routes } from "react-router-dom";
 import Google from "./Page/Public/Google";
 
@@ -10,7 +10,10 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />}>
             <Route index element={<HomePage />} />
+            <Route path="/artist/:id" element={<Artist />} />
             <Route path="/playlist/:id" element={<Playlist />} />
+            <Route path="/album/:id" element={<Album />} />
+            <Route path="/search" element={<Search />} />
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/auth/google/callback" element={<Google />} />

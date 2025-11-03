@@ -12,6 +12,7 @@ import { TrackModule } from './modules/track/track.module';
 import { UserModule } from './modules/user/user.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     AlbumModule,
     TrackModule,
     UserModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

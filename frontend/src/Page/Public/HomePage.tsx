@@ -20,7 +20,6 @@ const HomePage = () => {
     dispatch(getAlbums() as any);
   }, [dispatch]);
 
-  console.log(albums);
 
   return (
     <div className="text-white p-6 space-y-12">

@@ -10,7 +10,7 @@ const playerReducer = (state = initialState, action: any) => {
      case actionTypes.SET_CURRENT_SONG:
       return {
         ...state,
-        currentSong: action.payload, // ✅ dùng payload, không phải action.song
+        currentSong: action.payload,
       };
     case actionTypes.TOGGLE_PLAY:
       return {

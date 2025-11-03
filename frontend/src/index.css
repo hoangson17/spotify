@@ -149,3 +149,25 @@
   scrollbar-width: thin;
   scrollbar-color: #8e8d8d #1f1f1f;
 }
+
+
+
+.spotify-slider [data-slot="slider-track"] {
+  background-color: #4d4d4d !important; 
+}
+
+.spotify-slider [data-slot="slider-range"] {
+  background-color: #1DB954 !important;
+}
+
+.spotify-slider [data-slot="slider-thumb"] {
+  background-color: #ffffff !important; 
+  border: 2px solid #1DB954 !important; 
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.spotify-slider [data-slot="slider-thumb"]:hover,
+.spotify-slider [data-slot="slider-thumb"]:focus-visible {
+  border-color: #1ED760 !important;
+  box-shadow: 0 0 0 4px rgba(29, 185, 84, 0.3) !important; 
+}

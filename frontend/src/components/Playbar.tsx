@@ -164,6 +164,7 @@ const Playbar: React.FC = () => {
                 max={duration || 0}
                 step={1}
                 onValueChange={handleSeek}
+                className="spotify-slider"
               />
             </div>
             <span className="text-[11px] text-gray-400 font-mono">
@@ -180,6 +181,7 @@ const Playbar: React.FC = () => {
               max={100}
               step={1}
               onValueChange={handleVolumeChange}
+              className="spotify-slider"
             />
           </div>
         </div>

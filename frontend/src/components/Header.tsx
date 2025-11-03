@@ -1,22 +1,20 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import icons from "../utils/icons";
 import { Button } from "./ui/button";
 import { InputCustom } from "./InputCustom";
 import noneAvatar from "../assets/none.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-import { FileUser, LogOut, MoreHorizontalIcon, Settings } from "lucide-react";
+import { FileUser, LogOut, Settings } from "lucide-react";
 import { FaGrinStars } from "react-icons/fa";
 
 const {
@@ -32,6 +30,14 @@ const Header: React.FC = () => {
   const dispatch = useDispatch();
   const auth = useSelector((state: any) => state.auth);
   // console.log(auth);
+  const navigate = useNavigate();
+  const [keyword, setKeyword] = useState("");
+
+  const handleSearch = (e: any) => {
+    if (e.key === "Enter" && keyword.trim() !== "") {
+      navigate(`/search?q=${keyword}`);
+    }
+  };
 
   const handleLogout = () => {
     dispatch({ type: "LOGOUT" });
@@ -40,16 +46,20 @@ const Header: React.FC = () => {
   return (
     <header className="bg-[#000000] h-[64px] flex items-center justify-between px-4">
       <div className="flex items-center gap-3">
-        <Link to="/" ><FaSpotify fontSize={38} className="text-white ml-[11px]" /></Link>
+        <Link to="/">
+          <FaSpotify fontSize={38} className="text-white ml-[11px]" />
+        </Link>
       </div>
 
       <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-3">
-        <Link to="/" ><Button
-          variant="ghost"
-          className="rounded-full h-[48px] w-[48px] flex items-center justify-center bg-[#1f1f1f] hover:bg-[#2a2a2a] transition cursor-pointer"
-        >
-          <GoHomeFill className="text-white" size={22} />
-        </Button></Link>
+        <Link to="/">
+          <Button
+            variant="ghost"
+            className="rounded-full h-[48px] w-[48px] flex items-center justify-center bg-[#1f1f1f] hover:bg-[#2a2a2a] transition cursor-pointer"
+          >
+            <GoHomeFill className="text-white" size={22} />
+          </Button>
+        </Link>
 
         <div className="flex items-center bg-[#1f1f1f] rounded-full h-[48px] w-[400px] px-3 focus-within:ring-2 focus-within:ring-[#1DB954] transition">
           <CiSearch className="text-white" size={22} />
@@ -57,7 +67,11 @@ const Header: React.FC = () => {
             name="search"
             placeholder="Search for songs, artists, or albums..."
             className="flex-1 text-white bg-transparent border-none outline-none px-3 placeholder-gray-400"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            onKeyDown={handleSearch}
           />
+
           <Button
             variant="ghost"
             className="text-white rounded-full h-[36px] w-[36px] hover:bg-[#2a2a2a] transition"
@@ -107,7 +121,7 @@ const Header: React.FC = () => {
                 />
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent className="bg-[#2c2c2c] text-white rounded-lg shadow-lg w-55 p-2 flex flex-col gap-1 mt-3">
+              <DropdownMenuContent className="bg-[#2c2c2c] text-white rounded-lg shadow-lg w-55 p-2 flex flex-col gap-1 mt-3 z-50">
                 <DropdownMenuSeparator className="border-gray-600" />
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
                   <FileUser className="text-lg" /> Account
