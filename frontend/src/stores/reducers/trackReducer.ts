@@ -1,7 +1,7 @@
 import actionTypes from "../actions/actionTypes";
 
 const initialState = {
-  tracks: [] as any[],
+  tracks: [] as any,
   loading: false,
   error: null as string | null,
 };

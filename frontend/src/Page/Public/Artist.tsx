@@ -11,7 +11,7 @@ const Artist = () => {
   const location = useLocation();
 
   const { artists } = useSelector((state: any) => state.artists);
-
+    
   const handlePlayTrack = (track: any) => dispatch(setCurrentSong(track));
 
   useEffect(() => {

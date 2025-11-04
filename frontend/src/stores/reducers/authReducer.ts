@@ -28,7 +28,14 @@ const authReducer = (state = initialState, action: any) => {
       return { ...state, loading: false, error: action.payload };
 
     case actionTypes.LOGOUT:
-      return { ...initialState };
+      return {
+        user: null,
+        accessToken: null,
+        refreshToken: null,
+        loading: false,
+        error: null,
+        isAuthenticated: false,
+      };
 
     case actionTypes.SET_PROFILE:
       return { ...state, user: action.payload };

@@ -29,11 +29,13 @@ export class Playlist {
 
   @Column({
     type: 'text',
+    nullable: true,
   })
   description: string;
 
   @Column({
     type: 'text',
+    nullable: true,
   })
   cover_image: string;
 

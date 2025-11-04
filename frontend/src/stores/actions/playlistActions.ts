@@ -46,3 +46,8 @@ export const getPlaylistById = (id: number) => async (dispatch: any) => {
         });
     }
 };
+
+export const addPlaylist = (playlist: any) => ({
+  type: actionTypes.ADD_PLAYLIST,
+  payload: playlist,
+});

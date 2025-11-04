@@ -22,7 +22,7 @@ const rootReducer = combineReducers({
   player: playerReducer,
   playlist: playlistReducer,
   albums: albumReducer,
-  search: searchReducer
+  search: searchReducer,
 });
 
 export default rootReducer;
