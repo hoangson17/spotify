@@ -19,7 +19,7 @@ export class Playlist {
 
   @ManyToOne(() => User, (user) => user.playlists, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  users: number[];
+  users: User;
  
   @Column({
     type: 'varchar',

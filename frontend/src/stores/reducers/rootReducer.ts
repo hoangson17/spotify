@@ -8,14 +8,15 @@ import playerReducer from "./playerReducer";
 import playlistReducer from "./playlistReducer";
 import albumReducer from "./albumReducer";
 import searchReducer from "./searchReducer";
+import actionTypes from "../actions/actionTypes";
 
 const authPersistConfig = {
   key: "auth",
   storage,
-  whitelist: ["user", "isAuthenticated"], 
+  whitelist: ["user", "isAuthenticated"],
 };
 
-const rootReducer = combineReducers({
+const appReducer = combineReducers({
   auth: persistReducer(authPersistConfig, authReducer),
   tracks: trackReducer,
   artists: artistReducer,
@@ -24,5 +25,15 @@ const rootReducer = combineReducers({
   albums: albumReducer,
   search: searchReducer,
 });
+
+const rootReducer = (state:any, action:any) => {
+  if (action.type === actionTypes.LOGOUT) {
+    state = {...state, auth: { user: null, accessToken: null, refreshToken: null, isAuthenticated: false }};
+    storage.removeItem("persist:auth");
+    storage.removeItem("accessToken");
+    storage.removeItem("refreshToken");
+  }
+  return appReducer(state, action);
+};
 
 export default rootReducer;
