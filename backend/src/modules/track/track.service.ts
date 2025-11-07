@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Track } from 'src/entities/track.entity';
 import { Album } from 'src/entities/album.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { join } from 'path';
 import * as fs from 'fs';
 
@@ -137,5 +137,15 @@ export class TrackService {
   async delete(id: number) {
     const track = await this.findOne(id);
     return await this.trackRepository.remove(track);
+  }
+
+
+  async search(keyword: string) {
+    if (!keyword || keyword.trim() === '') return [];
+    return this.trackRepository.find({
+      where: { title: ILike(`%${keyword}%`) },
+      // relations: ['artist'],
+      // take: 20, //số lượng bản ghi
+    });
   }
 }

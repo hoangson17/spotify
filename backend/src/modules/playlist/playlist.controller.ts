@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { PlaylistService } from './playlist.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/config/multer.config';
@@ -27,5 +27,10 @@ export class PlaylistController {
   @UseInterceptors(FileInterceptor('cover_image',multerConfig))
   update(@Param('id') id: number, @Body() data: any, @UploadedFile() file: Express.Multer.File) {
     return this.playlistService.update(id, data, file);
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: number) {
+    return this.playlistService.delete(id);
   }
 }

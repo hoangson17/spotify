@@ -63,15 +63,16 @@ const Header: React.FC = () => {
 
         <div className="flex items-center bg-[#1f1f1f] rounded-full h-[48px] w-[400px] px-3 focus-within:ring-2 focus-within:ring-[#1DB954] transition">
           <CiSearch className="text-white" size={22} />
-          <InputCustom
+                  <InputCustom
             name="search"
             placeholder="Search for songs, artists, or albums..."
-            className="flex-1 text-white bg-transparent border-none outline-none px-3 placeholder-gray-400"
+            className="flex-1 text-white bg-transparent border-none outline-none px-3 placeholder-gray-400 
+            focus:bg-transparent active:bg-transparent hover:bg-transparent
+            focus:ring-0 focus:outline-none"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={handleSearch}
           />
-
           <Button
             variant="ghost"
             className="text-white rounded-full h-[36px] w-[36px] hover:bg-[#2a2a2a] transition"

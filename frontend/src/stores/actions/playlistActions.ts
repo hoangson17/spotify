@@ -30,8 +30,8 @@ export const getPlaylistById = (id: number) => async (dispatch: any) => {
         // console.log( response );
         if (response?.status === 200) {
             dispatch({
-                type: actionTypes.GET_PLAYLIST_SUCCESS,
-                playlist: response.data, 
+                type: actionTypes.GET_PLAYLIST_ID_SUCCESS,
+                playlistId: response.data, 
             });
         } else {
             dispatch({
@@ -51,3 +51,65 @@ export const addPlaylist = (playlist: any) => ({
   type: actionTypes.ADD_PLAYLIST,
   payload: playlist,
 });
+
+export const updatePlaylist = (updatedPlaylist: any) => ({
+  type: actionTypes.UPDATE_PLAYLIST,
+  payload: updatedPlaylist ,
+});
+
+export const deletePlaylist = (id: number) => ({
+  type: actionTypes.DELETE_PLAYLIST,
+  payload: id,
+});
+
+
+
+export const addTrackToPlaylist = (playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+  try {
+    const res = await playlistService.addTrack(playlistId, trackIds);
+    if (res.status === 200) {
+      dispatch({
+        type: actionTypes.PLAYLIST_TRACKS_SUCCESS,
+        payload: { playlistId, tracks: res.data.tracks },
+      });
+    } else {
+      dispatch({ type: actionTypes.PLAYLIST_TRACKS_FAIL });
+    }
+  } catch (err) {
+    dispatch({ type: actionTypes.PLAYLIST_TRACKS_ERROR, error: err });
+  }
+};
+
+// Xóa track khỏi playlist
+export const removeTrackFromPlaylist = (playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+  try {
+    const res = await playlistService.removeTrack(playlistId, trackIds);
+    if (res.status === 200) {
+      dispatch({
+        type: actionTypes.PLAYLIST_TRACKS_SUCCESS,
+        payload: { playlistId, tracks: res.data.tracks },
+      });
+    } else {
+      dispatch({ type: actionTypes.PLAYLIST_TRACKS_FAIL });
+    }
+  } catch (err) {
+    dispatch({ type: actionTypes.PLAYLIST_TRACKS_ERROR, error: err });
+  }
+};
+
+// Đồng bộ toàn bộ track của playlist
+export const syncPlaylistTracks = (playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+  try {
+    const res = await playlistService.syncTrack(playlistId, trackIds);
+    if (res.status === 200) {
+      dispatch({
+        type: actionTypes.PLAYLIST_TRACKS_SUCCESS,
+        payload: { playlistId, tracks: res.data.tracks },
+      });
+    } else {
+      dispatch({ type: actionTypes.PLAYLIST_TRACKS_FAIL });
+    }
+  } catch (err) {
+    dispatch({ type: actionTypes.PLAYLIST_TRACKS_ERROR, error: err });
+  }
+};

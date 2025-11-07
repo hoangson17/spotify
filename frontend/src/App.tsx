@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Album, Artist, Home, HomePage, Login, Playlist, Search } from "./Page/Public";
 import { Route, Routes } from "react-router-dom";
 import Google from "./Page/Public/Google";
+import { useSelector } from "react-redux";
 
 function App() {
   return (
@@ -11,7 +12,7 @@ function App() {
           <Route path="/" element={<Home />}>
             <Route index element={<HomePage />} />
             <Route path="/artist/:id" element={<Artist />} />
-            <Route path="/playlist/:id" element={<Playlist />} />
+            <Route path="/playlist/:id" element={<Playlist/>} />
             <Route path="/album/:id" element={<Album />} />
             <Route path="/search" element={<Search />} />
           </Route>

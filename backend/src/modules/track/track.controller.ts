@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UploadedFile,
   UploadedFiles,
   UseInterceptors,
@@ -23,10 +24,17 @@ export class TrackController {
     return this.trackService.findAll();
   }
 
+    @Get('search')
+  search(@Query('keyword') keyword: string) {
+    return this.trackService.search(keyword);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: number) {
     return this.trackService.findOne(id);
   }
+
+
 
 @Post()
   @UseInterceptors(
@@ -58,4 +66,6 @@ export class TrackController {
   delete(@Param('id') id: number) {
     return this.trackService.delete(id);
   }
+
+
 }

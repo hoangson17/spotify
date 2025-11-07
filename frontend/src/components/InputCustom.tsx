@@ -25,7 +25,7 @@ const InputCustom = React.forwardRef<HTMLInputElement, InputProps>(
             className={cn(
               "h-10 w-full rounded-full bg-[#1f1f1f] border border-[#2a2a2a] px-4 text-sm text-white placeholder-gray-400 outline-none transition-all duration-200",
               "hover:border-[#3a3a3a]",
-              "disabled:cursor-not-allowed disabled:opacity-50 focus:bg-[#2a2a2a00]",
+              "disabled:cursor-not-allowed disabled:opacity-50",
               className
             )}
             {...props}
