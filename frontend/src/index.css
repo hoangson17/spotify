@@ -122,7 +122,6 @@
   font-family: 'Inter', sans-serif;
 }
 
-
 /* Scrollbar custom */
 .scrollbar-custom::-webkit-scrollbar {
   width: 8px;
@@ -149,8 +148,6 @@
   scrollbar-width: thin;
   scrollbar-color: #8e8d8d #1f1f1f;
 }
-
-
 
 .spotify-slider [data-slot="slider-track"] {
   background-color: #4d4d4d !important; 

@@ -33,13 +33,11 @@ const SidebarCustom = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState<any>(null);
 
-
-
   const dispatch: any = useDispatch();
 
   const user = useSelector((state: any) => state.auth.user);
   const playlist = useSelector((state: any) => state.playlist.playlist);
-  
+
   useEffect(() => {
     if (user?.id) {
       dispatch(getPlaylist());
@@ -51,27 +49,37 @@ const SidebarCustom = () => {
   );
 
   // console.log(userPlaylists);
-  
 
   const [edit, setEdit] = useState({
     title: "",
     description: "",
-    cover_image: null as File | null, 
+    cover_image: null as File | null,
   });
 
-  const handleCreatePlaylist = async () => {
-    if (!user?.id) return;
-    try {
-      const res = await playlistService.createPlaylist({
-        user_id: user.id,
-        title: "New Playlist",
-      });
-      const newPlaylist = res?.data?.data;
-      dispatch(addPlaylist(newPlaylist));
-    } catch (error) {
-      console.error("Tạo playlist thất bại:", error);
-    }
-  };
+const handleCreatePlaylist = async () => {
+  if (!user?.id) return;
+  try {
+    const res = await playlistService.createPlaylist({
+      user_id: user.id,
+      title: "New Playlist",
+    });
+
+    let newPlaylist = res?.data?.data || res?.data;
+
+    newPlaylist = {
+      ...newPlaylist,
+      users: newPlaylist.users || { id: user.id, name: user.name },
+      tracks: Array.isArray(newPlaylist?.tracks) ? newPlaylist.tracks : [],
+      cover_image: newPlaylist.cover_image ?? null,
+    };
+
+    dispatch(addPlaylist(newPlaylist));
+  } catch (error) {
+    console.error("Tạo playlist thất bại:", error);
+  }
+};
+
+
 
   const handleDeletePlaylist = async (playlistId: number) => {
     try {
@@ -82,29 +90,31 @@ const SidebarCustom = () => {
     }
   };
 
-const handleUpdate = async () => {
-  try {
-    const formData = new FormData();
-    formData.append("title", edit.title || "");
-    formData.append("description", edit.description || "");
-    if (edit.cover_image instanceof File) {
-      formData.append("cover_image", edit.cover_image);
+  const handleUpdate = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("title", edit.title || "");
+      formData.append("description", edit.description || "");
+      if (edit.cover_image instanceof File) {
+        formData.append("cover_image", edit.cover_image);
+      }
+
+      const res = await playlistService.updatePlaylist(
+        editingPlaylist.id,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      const updated = res.data;
+      console.log("Updated playlist:", updated);
+      dispatch(updatePlaylist(updated));
+      setEditingPlaylist(null);
+    } catch (err) {
+      console.error("Lỗi update playlist:", err);
     }
-
-    const res = await playlistService.updatePlaylist(editingPlaylist.id, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    const updated = res.data;
-    console.log("Updated playlist:", updated);
-    dispatch(updatePlaylist(updated));
-    setEditingPlaylist(null);
-  } catch (err) {
-    console.error("Lỗi update playlist:", err);
-  }
-};
-
-
+  };
 
   return (
     <div className="bg-[#121212] h-full text-white rounded-xl">
@@ -145,12 +155,12 @@ const handleUpdate = async () => {
                 />
               )}
 
-
               <Input
                 value={edit.description}
-                onChange={(e) => setEdit({ ...edit, description: e.target.value })}
+                onChange={(e) =>
+                  setEdit({ ...edit, description: e.target.value })
+                }
               />
-
             </div>
           </div>
 
@@ -209,13 +219,13 @@ const handleUpdate = async () => {
                       </span>
                       <div className="flex flex-col ">
                         <span
-                        className={`text-sm font-medium transition-all ${
-                          collapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
-                        }`}
-                      >
-                        {item.title}
-                      </span>
-                      <small>{item.users.name}</small>
+                          className={`text-sm font-medium transition-all ${
+                            collapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                          }`}
+                        >
+                          {item.title}
+                        </span>
+                        <small>{item.users.name}</small>
                       </div>
                     </Link>
                   </ContextMenuTrigger>
@@ -231,7 +241,11 @@ const handleUpdate = async () => {
                     <ContextMenuItem
                       onClick={() => {
                         setEditingPlaylist(item);
-                        setEdit(item.title);
+                        setEdit({
+                          title: item.title || "",
+                          description: item.description || "",
+                          cover_image: null,
+                        });
                       }}
                       className="px-2 py-2 text-sm rounded hover:bg-[#3a3a3a] cursor-pointer transition"
                     >
@@ -254,7 +268,8 @@ const handleUpdate = async () => {
             >
               <div className="flex flex-col gap-3">
                 <p>
-                  <b>Create your first playlist</b><br />
+                  <b>Create your first playlist</b>
+                  <br />
                   <small>It's easy, we'll help you</small>
                 </p>
                 <Button
@@ -266,7 +281,8 @@ const handleUpdate = async () => {
               </div>
               <div className="flex flex-col gap-3">
                 <p>
-                  <b>Let's find some podcasts to follow</b><br />
+                  <b>Let's find some podcasts to follow</b>
+                  <br />
                   <small>We'll keep you updated on new episodes</small>
                 </p>
                 <Button className="bg-white text-black font-bold hover:bg-white hover:scale-105 cursor-pointer rounded-full">
@@ -281,17 +297,21 @@ const handleUpdate = async () => {
           >
             <div className="flex flex-col gap-3">
               <p>
-                <b>Create your first playlist</b><br />
+                <b>Create your first playlist</b>
+                <br />
                 <small>It's easy, we'll help you</small>
               </p>
 
               <Button className="bg-white text-black font-bold hover:bg-white hover:scale-105 cursor-pointer rounded-full">
-                <Link className="w-full" to="/login">Create playlist </Link>
+                <Link className="w-full" to="/login">
+                  Create playlist{" "}
+                </Link>
               </Button>
             </div>
             <div className="flex flex-col gap-3">
               <p>
-                <b>Let's find some podcasts to follow</b><br />
+                <b>Let's find some podcasts to follow</b>
+                <br />
                 <small>We'll keep you updated on new episodes</small>
               </p>
               <Button className="bg-white text-black font-bold hover:bg-white hover:scale-105 cursor-pointer rounded-full">

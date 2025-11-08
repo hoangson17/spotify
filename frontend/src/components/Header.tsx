@@ -131,7 +131,9 @@ const Header: React.FC = () => {
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
                   <Settings className="text-lg" /> Profile
                 </DropdownMenuItem>
-
+                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
+                  <Link to={`/admin`} className="flex items-center gap-2" ><Settings className="text-lg" /> Manager </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
                   <FaGrinStars className="text-lg" /> Update Premium
                 </DropdownMenuItem>

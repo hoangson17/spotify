@@ -3,6 +3,7 @@ import { Album, Artist, Home, HomePage, Login, Playlist, Search } from "./Page/P
 import { Route, Routes } from "react-router-dom";
 import Google from "./Page/Public/Google";
 import { useSelector } from "react-redux";
+import { AddAlbum, AddArtist, Admin } from "./Page/System";
 
 function App() {
   return (
@@ -18,6 +19,11 @@ function App() {
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/auth/google/callback" element={<Google />} />
+          <Route path="/admin" element={<Admin />}>
+            <Route path="artist" element={<AddArtist />} />
+            <Route path="album" element={<AddAlbum />} />
+          </Route>
+
         </Routes>
       </div>
     </>
