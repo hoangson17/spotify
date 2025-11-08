@@ -4,7 +4,12 @@ import { UserService } from './user.service';
 @Controller('like-tracks')
 export class LikeTracksController {
     constructor(private readonly userService: UserService) {}
-    
+
+      @Post('get')
+      async getTracks(@Body() body: any) {
+        return this.userService.getTracks(body.userId);
+      }
+
       @Post('sync')
       async syncTrack(@Body() body: any) {
         return this.userService.syncTrack(body.userId, body.trackIds);

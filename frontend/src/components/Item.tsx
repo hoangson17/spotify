@@ -2,7 +2,7 @@ import React from "react";
 import clsx from "clsx";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { setCurrentSong } from "@/stores/actions/playerActions";
+import { queue, setCurrentSong } from "@/stores/actions/playerActions";
 import { Play } from "lucide-react";
 
 interface Track {
@@ -65,7 +65,6 @@ const Item: React.FC<ItemProps> = ({
     let tracks: Track[] = [];
     let trackToPlay: Track | null = null;
 
-    console.log(playlistTracks);
     
 
     if (playlistTracks && playlistTracks.length > 0) {
@@ -85,7 +84,8 @@ const Item: React.FC<ItemProps> = ({
 
     if (tracks.length > 0) {
       trackToPlay = tracks[0];
-      dispatch(setCurrentSong(trackToPlay));
+        dispatch(queue(playlistTracks));
+        dispatch(setCurrentSong(trackToPlay));
     }
   };
 

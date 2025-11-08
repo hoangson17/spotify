@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import { Play, Heart, MoreHorizontal } from "lucide-react";
 import { getAlbumById } from "@/stores/actions/albumActions";
-import { setCurrentSong } from "@/stores/actions/playerActions";
+import { queue, setCurrentSong } from "@/stores/actions/playerActions";
 
 const Album = () => {
   const dispatch = useDispatch();
@@ -14,14 +14,20 @@ const Album = () => {
   useEffect(() => {
     if (id) dispatch(getAlbumById(Number(id)) as any);
   }, [id]);
+  
+  const handlePlayTrack = (track: any) => dispatch(queue([track]));
 
-  const handlePlayTrack = (track: any) => dispatch(setCurrentSong(track));
-
-  const handlePlayAlbum = () => {
+  const handlePlayTracks = () => {
     if (album?.tracks?.length) {
-      dispatch(setCurrentSong(album.tracks[0])); 
+      dispatch(queue(albums.tracks)); 
     }
   };
+
+  // const handlePlayAlbum = () => {
+  //   if (album?.tracks?.length) {
+  //     dispatch(setCurrentSong(album.tracks[0])); 
+  //   }
+  // };
 
   if (!album) {
     return <div className="text-center py-10 text-gray-400">Loading album...</div>;
@@ -48,7 +54,7 @@ const Album = () => {
 
       <div className="flex items-center gap-6 px-6 py-4 border-b border-white/10">
         <button
-          onClick={handlePlayAlbum}
+          onClick={handlePlayTracks}
           className="bg-green-500 hover:bg-green-400 h-16 w-16 rounded-full flex items-center justify-center hover:scale-105 transition"
         >
           <Play className="text-black" size={34} />

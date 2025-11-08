@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { getArtistById } from "@/stores/actions/artistActions";
 import { Play, Heart, MoreHorizontal } from "lucide-react";
-import { setCurrentSong } from "@/stores/actions/playerActions";
+import { queue, setCurrentSong } from "@/stores/actions/playerActions";
 
 const Artist = () => {
   const dispatch = useDispatch();
@@ -12,7 +12,13 @@ const Artist = () => {
 
   const { artists } = useSelector((state: any) => state.artists);
     
-  const handlePlayTrack = (track: any) => dispatch(setCurrentSong(track));
+  const handlePlayTrack = (track: any) => dispatch(queue([track]));
+
+  const handlePlayTracks = () => {
+    if (artists?.tracks?.length) {
+      dispatch(queue(artists.tracks)); 
+    }
+  };
 
   useEffect(() => {
     if (id) dispatch(getArtistById(Number(id)) as any);
@@ -45,7 +51,7 @@ const Artist = () => {
 
           {/* ACTIONS */}
           <div className="flex items-center gap-6 px-8 py-4 border-b border-white/10">
-            <button className="bg-green-500 hover:bg-green-400 h-16 w-16 rounded-full flex items-center justify-center hover:scale-105 transition">
+            <button onClick={handlePlayTracks} className="bg-green-500 hover:bg-green-400 h-16 w-16 rounded-full flex items-center justify-center hover:scale-105 transition">
               <Play className="text-black" size={34} />
             </button>
             <Heart className="hover:text-green-400 cursor-pointer" size={30} />

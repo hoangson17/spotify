@@ -8,6 +8,14 @@ export const setCurrentSong = (song: any) => {
   };
 };
 
+export const queue = (song: any) => {
+  console.log(song);
+  
+  return{
+  type: actionTypes.QUEUE,
+  payload: song,
+}}
+
 export const togglePlay = () => ({
   type: actionTypes.TOGGLE_PLAY,
 });

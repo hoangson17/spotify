@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useParams } from "react-router-dom";
 import { Play, MoreHorizontal, Heart, Download, Shuffle } from "lucide-react";
-import { setCurrentSong } from "@/stores/actions/playerActions";
+import { queue, setCurrentSong } from "@/stores/actions/playerActions";
 import { trackService } from "@/services/trackService";
 import { playlistService } from "@/services/playlistService";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,16 @@ const Playlist = () => {
   const [isShowSearch, setIsShowSearch] = React.useState(true);
   const auth = localStorage.getItem("persist:auth");
   const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
-  console.log(playlistId);
-  
   const { id } = useParams();
   const location = useLocation();
 
-  const handlePlayTrack = (track: any) => dispatch(setCurrentSong(track));
+  const handlePlayTrack = (track: any) => dispatch(queue([track]));
+
+  const handlePlayTracks = () => {
+    if (playlistId?.tracks?.length) {
+      dispatch(queue(playlistId.tracks)); 
+    }
+  };
 
   useEffect(() => {
     if (!search.trim()) {
@@ -149,7 +153,7 @@ const Playlist = () => {
 
         {/* ACTIONS */}
         <div className="flex items-center gap-6 px-6 py-4 border-b border-white/10">
-          <button className="bg-green-500 hover:bg-green-400 h-16 w-16 rounded-full flex items-center justify-center hover:scale-105 transition">
+          <button onClick={handlePlayTracks} className="bg-green-500 hover:bg-green-400 h-16 w-16 rounded-full flex items-center justify-center hover:scale-105 transition">
             <Play className="text-black" size={34} />
           </button>
           <Heart className="hover:text-green-400 cursor-pointer" size={28} />

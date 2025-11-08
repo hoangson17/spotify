@@ -22,7 +22,7 @@ export const playlistService = {
         return response;
     },
     syncTrack: async (id: number, trackIds: number[]) => {
-        const response = await axiosInstance.patch(`/playlist/${id}/sync`, { trackIds });
+        const response = await axiosInstance.patch(`/playlist-track/sync`,{ playlistId:id , trackIds });
         return response;
     },
 

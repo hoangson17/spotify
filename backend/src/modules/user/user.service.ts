@@ -76,7 +76,13 @@ export class UserService {
 
     user.tracks.push(...newTracks);
 
-    return await this.userRepository.save(user);
+    const savedUser = await this.userRepository.save(user);
+
+    return {
+      ...savedUser,
+      password: null,
+    };
+
   }
 
   async deleteTracks(userId: number) {
@@ -92,5 +98,15 @@ export class UserService {
     };
 
     return await this.userRepository.save(dataUpdate);
+  }
+
+
+  async getTracks(userId: number) {
+    const result = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['tracks'],
+    })
+    delete (result as any).password;
+    return result;
   }
 }
