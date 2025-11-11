@@ -7,6 +7,8 @@ import { queue, setCurrentSong } from "@/stores/actions/playerActions";
 import { trackService } from "@/services/trackService";
 import { playlistService } from "@/services/playlistService";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import music from "../../assets/music.jpg";
 
 const Playlist = () => {
   const dispatch = useDispatch();
@@ -18,17 +20,13 @@ const Playlist = () => {
   const [isShowSearch, setIsShowSearch] = React.useState(true);
   const auth = localStorage.getItem("persist:auth");
   const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
+  console.log(playlistId);
+
   const { id } = useParams();
   const location = useLocation();
 
   const handlePlayTrack = (track: any) => dispatch(queue([track]));
-
-  const handlePlayTracks = () => {
-    if (playlistId?.tracks?.length) {
-      dispatch(queue(playlistId.tracks)); 
-    }
-  };
-
+  const handlePlayTracks = () => dispatch(queue(playlistId.tracks));
   useEffect(() => {
     if (!search.trim()) {
       setResults([]);
@@ -55,15 +53,10 @@ const Playlist = () => {
       console.log("Adding track:", trackIds, "to playlist:", id);
 
       const res = await playlistService.addTrack(Number(id), [trackIds]);
-      console.log("API response:", res.data);
-
       await dispatch(getPlaylistById(Number(id)) as any);
-      console.log("Playlist updated");
+      toast.success(`Thêm bài hát thành công`);
     } catch (error: any) {
-      console.error(
-        "Failed to add track:",
-        error.response?.data?.message || error.message
-      );
+      toast.error("có lỗi khi thêm bài hát");
     }
   };
 
@@ -74,7 +67,7 @@ const Playlist = () => {
         {playlistId?.id && (
           <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
             <img
-              src={playlistId.cover_image || playlistId.cover_image}
+              src={playlistId.cover_image || music}
               className="w-48 h-48 rounded shadow-lg object-cover"
               alt=""
             />
@@ -96,8 +89,7 @@ const Playlist = () => {
           </div>
         )}
         {/* SEARCH */}
-        { isShowSearch && 
-          user.id === playlistId?.users.id && (
+        {isShowSearch && user.id === playlistId?.users.id && (
           <div className="px-6 py-6 border-b border-white/10">
             <h2 className="text-xl font-semibold mb-3">
               Let's find something for your playlist
@@ -105,10 +97,10 @@ const Playlist = () => {
 
             <div className="flex items-center justify-between">
               <input
-              className="w-[300px] bg-[#2A2A2A] p-3 rounded-md outline-none"
-              placeholder="Search for songs or artists"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+                className="w-[300px] bg-[#2A2A2A] p-3 rounded-md outline-none"
+                placeholder="Search for songs or artists"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
               <Button
                 onClick={() => setIsShowSearch(false)}
@@ -129,7 +121,7 @@ const Playlist = () => {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={track.image_url}
+                        src={track.image_url || music}
                         className="w-10 h-10 rounded object-cover"
                       />
                       <div>
@@ -153,12 +145,15 @@ const Playlist = () => {
 
         {/* ACTIONS */}
         <div className="flex items-center gap-6 px-6 py-4 border-b border-white/10">
-          <button onClick={handlePlayTracks} className="bg-green-500 hover:bg-green-400 h-16 w-16 rounded-full flex items-center justify-center hover:scale-105 transition">
+          <button
+            onClick={handlePlayTracks}
+            className="bg-green-500 hover:bg-green-400 h-16 w-16 rounded-full flex items-center justify-center hover:scale-105 transition"
+          >
             <Play className="text-black" size={34} />
           </button>
           <Heart className="hover:text-green-400 cursor-pointer" size={28} />
-          <Shuffle className="hover:text-green-400 cursor-pointer" size={28} />
-          <Download className="hover:text-green-400 cursor-pointer" size={28} />
+          {/* <Shuffle className="hover:text-green-400 cursor-pointer" size={28} />
+          <Download className="hover:text-green-400 cursor-pointer" size={28} /> */}
           <MoreHorizontal
             className="hover:text-green-400 cursor-pointer"
             size={28}
@@ -177,14 +172,14 @@ const Playlist = () => {
         {playlistId?.tracks?.map((track: any, index: number) => (
           <div
             key={track.id}
-            className="flex items-center justify-between items-center py-2 px-6 text-sm hover:bg-white/10 cursor-pointer transition"
+            className="group flex items-center justify-between py-2 px-6 text-sm hover:bg-white/10 cursor-pointer transition"
             onClick={() => handlePlayTrack(track)}
           >
             <div className="flex items-center gap-10">
-              <div className="text-gray-400 flex items-center ">
+              <div className="text-gray-400 flex items-center w-6 justify-center">
                 <span className="group-hover:hidden">{index + 1}</span>
                 <Play
-                  className="hidden group-hover:block text-white"
+                  className="hidden group-hover:inline-block text-white"
                   size={18}
                 />
               </div>
@@ -200,6 +195,7 @@ const Playlist = () => {
                 </div>
               </div>
             </div>
+
             <span className="text-gray-300">{track.duration || "--:--"}</span>
           </div>
         ))}

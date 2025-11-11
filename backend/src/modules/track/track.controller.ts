@@ -12,7 +12,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { TrackService } from './track.service';
-import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { multerConfig } from 'src/config/multer.config';
 
 @Controller('track')
@@ -24,7 +27,7 @@ export class TrackController {
     return this.trackService.findAll();
   }
 
-    @Get('search')
+  @Get('search')
   search(@Query('keyword') keyword: string) {
     return this.trackService.search(keyword);
   }
@@ -34,9 +37,7 @@ export class TrackController {
     return this.trackService.findOne(id);
   }
 
-
-
-@Post()
+  @Post()
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -56,7 +57,6 @@ export class TrackController {
     return this.trackService.create(data, image, audio);
   }
 
-
   @Patch(':id')
   update(@Param('id') id: number, @Body() data: any) {
     return this.trackService.update(id, data);
@@ -66,6 +66,4 @@ export class TrackController {
   delete(@Param('id') id: number) {
     return this.trackService.delete(id);
   }
-
-
 }

@@ -1,8 +1,8 @@
-import { getTracks } from "@/stores/actions/trackActions";
-import axiosInstance from "../axiosConfig";
+import AxiosInstance from "../axiosConfig";
 
 export const likeTrackService = {
-    getTracks: (userId: number) => axiosInstance.post(`/like-tracks/get`,userId),
-    likeTrack: (userId: number,trackIds: number[]) => axiosInstance.post(`/like-tracks/add`,{userId,trackIds}),
-    unlikeTrack: () => axiosInstance.delete(`/like-tracks/delete`),
+    getLikeTracks:async (userId: number) => AxiosInstance.get(`/like-tracks/${userId}`),
+    addLikeTracks: async (userId: number, trackIds: number[]) => AxiosInstance.post("/like-tracks/add", { userId, trackIds }),
+    removeLikeTracks: async (userId: number, trackIds: number[]) => AxiosInstance.delete("/like-tracks/delete", { data: { userId, trackIds }}), // delete đặt trong data 
+    syncLikeTracks: async (userId: number, trackIds: number[]) => AxiosInstance.post("/like-tracks/sync", { userId, trackIds }),
 }

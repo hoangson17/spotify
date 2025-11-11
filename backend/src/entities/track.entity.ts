@@ -1,6 +1,7 @@
 import {
   Column,
   Entity,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -22,23 +23,29 @@ export class Track {
   })
   title: string;
 
-  @ManyToOne(() => Album, (album) => album.tracks,{onDelete: 'CASCADE'})
+  @ManyToOne(() => Album, (album) => album.tracks, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
   album: Album;
 
-  @ManyToMany(() => Artist, (artist) => artist.tracks,{onDelete: 'CASCADE'})
+
+  @ManyToMany(() => Artist, (artist) => artist.tracks, { onDelete: 'CASCADE' })
   artists: Artist[];
 
-  @ManyToMany(() => Playlist, (playlist) => playlist.tracks,{onDelete: 'CASCADE'})
+  @ManyToMany(() => Playlist, (playlist) => playlist.tracks, {
+    onDelete: 'CASCADE',
+  })
   playlists: Playlist[];
 
-  @ManyToMany(() => User, (user) => user.tracks,{onDelete: 'CASCADE'})
+  @ManyToMany(() => User, (user) => user.tracks, { onDelete: 'CASCADE' })
   users: User[];
- 
+
   @Column({
     type: 'int',
   })
   duration: number;
- 
+
   @Column({
     type: 'text',
     nullable: true,
@@ -68,4 +75,3 @@ export class Track {
   })
   deleted_at: Date;
 }
- 

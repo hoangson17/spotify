@@ -85,20 +85,26 @@ export class UserService {
 
   }
 
-  async deleteTracks(userId: number) {
-    const user = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['tracks'],
-    });
-    if (!user) throw new NotFoundException('User not found');
+async deleteTracks(userId: number, trackIds: number[]) {
+  const user = await this.userRepository.findOne({
+    where: { id: userId },
+    relations: ['tracks'],
+  });
 
-    const dataUpdate = {
-      ...user,
-      tracks: [],
-    };
+  if (!user) throw new NotFoundException('User not found');
 
-    return await this.userRepository.save(dataUpdate);
-  }
+  const updatedTracks = user.tracks.filter(
+    (track) => !trackIds.includes(track.id)
+  );
+
+  const dataUpdate = {
+    ...user,
+    tracks: updatedTracks,
+  };
+
+  return await this.userRepository.save(dataUpdate);
+}
+
 
 
   async getTracks(userId: number) {

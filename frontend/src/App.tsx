@@ -1,10 +1,18 @@
-import { useState } from "react";
-import { Album, Artist, Home, HomePage, LikeTracks, Login, Playlist, Search } from "./Page/Public";
+import {
+  Album,
+  Artist,
+  Home,
+  HomePage,
+  LikeTracks,
+  Login,
+  Playlist,
+  Search,
+} from "./Page/Public";
 import { Route, Routes } from "react-router-dom";
 import Google from "./Page/Public/Google";
-import { useSelector } from "react-redux";
 import { AddAlbum, AddArtist, Admin } from "./Page/System";
 import AuthMiddlewares from "./Middleware/AuthMiddlewares";
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
@@ -15,7 +23,7 @@ function App() {
             <Route index element={<HomePage />} />
             <Route element={<AuthMiddlewares />}>
               <Route path="/artist/:id" element={<Artist />} />
-              <Route path="/playlist/:id" element={<Playlist/>} />
+              <Route path="/playlist/:id" element={<Playlist />} />
               <Route path="/album/:id" element={<Album />} />
               <Route path="/search" element={<Search />} />
               <Route path="/like-tracks" element={<LikeTracks />} />
@@ -27,9 +35,9 @@ function App() {
             <Route path="artist" element={<AddArtist />} />
             <Route path="album" element={<AddAlbum />} />
           </Route>
-
         </Routes>
       </div>
+      <Toaster />
     </>
   );
 }

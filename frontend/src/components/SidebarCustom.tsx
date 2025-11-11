@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { IoMenu } from "react-icons/io5";
 import { FaMusic } from "react-icons/fa";
-import { Plus } from "lucide-react";
+import { Heart, Plus, ThumbsUp } from "lucide-react";
 import { playlistService } from "@/services/playlistService";
 import {
   addPlaylist,
@@ -28,19 +28,25 @@ import {
 import { DialogFooter, DialogHeader } from "./ui/dialog";
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { Input } from "./ui/input";
+import { getLikeTracks } from "@/stores/actions/likeTracksAction";
+import { toast } from "sonner";
 
 const SidebarCustom = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [editingPlaylist, setEditingPlaylist] = useState<any>(null);
 
   const dispatch: any = useDispatch();
-
-  const user = useSelector((state: any) => state.auth.user);
+  const auth = localStorage.getItem("persist:auth");
+  const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
   const playlist = useSelector((state: any) => state.playlist.playlist);
+  const { likedTracks, loading } = useSelector(
+    (state: any) => state.likedTracks
+  );
 
   useEffect(() => {
     if (user?.id) {
       dispatch(getPlaylist());
+      dispatch(getLikeTracks(user.id));
     }
   }, [user?.id, dispatch]);
 
@@ -56,35 +62,37 @@ const SidebarCustom = () => {
     cover_image: null as File | null,
   });
 
-const handleCreatePlaylist = async () => {
-  if (!user?.id) return;
-  try {
-    const res = await playlistService.createPlaylist({
-      user_id: user.id,
-      title: "New Playlist",
-    });
+  const handleCreatePlaylist = async () => {
+    if (!user?.id) return;
 
-    let newPlaylist = res?.data?.data || res?.data;
+    try {
+      const res = await playlistService.createPlaylist({
+        user_id: user.id,
+        title: "New Playlist",
+      });
 
-    newPlaylist = {
-      ...newPlaylist,
-      users: newPlaylist.users || { id: user.id, name: user.name },
-      tracks: Array.isArray(newPlaylist?.tracks) ? newPlaylist.tracks : [],
-      cover_image: newPlaylist.cover_image ?? null,
-    };
+      let newPlaylist = res?.data?.data || res?.data;
 
-    dispatch(addPlaylist(newPlaylist));
-  } catch (error) {
-    console.error("Tạo playlist thất bại:", error);
-  }
-};
+      newPlaylist = {
+        ...newPlaylist,
+        users: newPlaylist.users || { id: user.id, name: user.name },
+        tracks: Array.isArray(newPlaylist?.tracks) ? newPlaylist.tracks : [],
+        cover_image: newPlaylist.cover_image ?? null,
+      };
 
+      dispatch(addPlaylist(newPlaylist));
 
+      return newPlaylist; 
+    } catch (error) {
+      console.error("Tạo playlist thất bại:", error);
+      throw error; 
+    }
+  };
 
   const handleDeletePlaylist = async (playlistId: number) => {
     try {
       await playlistService.deletePlaylist(playlistId);
-      dispatch(deletePlaylist(playlistId)); // ✅ redux tự filter
+      dispatch(deletePlaylist(playlistId)); 
     } catch (error) {
       console.error("Xóa playlist thất bại:", error);
     }
@@ -198,7 +206,13 @@ const handleCreatePlaylist = async () => {
           <button
             className="p-1 rounded-full hover:bg-[#3f3f3f] bg-[#1f1f1f] transition cursor-pointer"
             title="Tạo playlist mới"
-            onClick={handleCreatePlaylist}
+            onClick={() => {
+              toast.promise(handleCreatePlaylist(), {
+                loading: "Đang tạo playlist...",
+                success: (data) => `Playlist "${data.title}" đã được tạo`,
+                error: "Tạo playlist thất bại!",
+              });
+            }}
           >
             <Plus size={24} />
           </button>
@@ -207,6 +221,32 @@ const handleCreatePlaylist = async () => {
         {user ? (
           userPlaylists.length > 0 ? (
             <nav className="flex-1 mt-2">
+              {likedTracks.length > 0 && (
+                <Link
+                  to={`/like-tracks`}
+                  className="flex items-center gap-3 w-full px-6 py-3 hover:bg-[#1f1f1f] rounded transition"
+                >
+                  <span className="w-6 flex justify-center">
+                    <Heart size={30} />
+                  </span>
+                  <div className="flex flex-col ">
+                    <span
+                      className={`text-sm font-medium transition-all ${
+                        collapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                      }`}
+                    >
+                      {"Like tracks"}
+                    </span>
+                    <small
+                      className={`${
+                        collapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                      }`}
+                    >
+                      {user.name}
+                    </small>
+                  </div>
+                </Link>
+              )}
               {userPlaylists.map((item: any) => (
                 <ContextMenu key={item.id}>
                   <ContextMenuTrigger>
@@ -225,7 +265,13 @@ const handleCreatePlaylist = async () => {
                         >
                           {item.title}
                         </span>
-                        <small>{item.users.name}</small>
+                        <small
+                          className={`${
+                            collapsed ? "opacity-0 w-0" : "opacity-100 w-auto"
+                          }`}
+                        >
+                          {item.users.name}
+                        </small>
                       </div>
                     </Link>
                   </ContextMenuTrigger>

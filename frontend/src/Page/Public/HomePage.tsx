@@ -5,6 +5,7 @@ import { List, Item } from "../../components/index";
 import { getArtist } from "@/stores/actions/artistActions";
 import { getPlaylist } from "@/stores/actions/playlistActions";
 import { getAlbums } from "@/stores/actions/albumActions";
+import music from "../../assets/music.jpg";
 
 const HomePage = () => {
   const dispatch = useDispatch();
@@ -23,9 +24,9 @@ const HomePage = () => {
 
   return (
     <div className="text-white p-6 space-y-12">
-      <List title="Suggested artists" items={artists || []} isArtist />
-      <List title="Your playlist" items={playlist || []} playlistTracks={playlist || []} />
-      <List title="Top album" items={albums || []} albumTracks={albums || []} />
+      <List title="Suggested artists" items={artists || []} isArtist imgNone={music} />
+      <List title="Your playlist" items={playlist || []} playlistTracks={playlist || []} imgNone={music}  />
+      <List title="Top album" items={albums || []} albumTracks={albums || []} imgNone={music}  />
     </div>
   );
 };

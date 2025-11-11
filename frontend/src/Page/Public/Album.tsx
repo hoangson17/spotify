@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { Play, Heart, MoreHorizontal } from "lucide-react";
 import { getAlbumById } from "@/stores/actions/albumActions";
 import { queue, setCurrentSong } from "@/stores/actions/playerActions";
+import music from "../../assets/music.jpg";
 
 const Album = () => {
   const dispatch = useDispatch();
@@ -23,6 +24,7 @@ const Album = () => {
     }
   };
 
+  // bỏ
   // const handlePlayAlbum = () => {
   //   if (album?.tracks?.length) {
   //     dispatch(setCurrentSong(album.tracks[0])); 
@@ -38,7 +40,7 @@ const Album = () => {
       {/* HEADER */}
       <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
         <img
-          src={album.cover_image}
+          src={album.cover_image || music}
           alt={album.title}
           className="w-48 h-48 rounded shadow-lg object-cover"
         />
@@ -82,7 +84,7 @@ const Album = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <img src={track.image_url} className="w-10 h-10 rounded object-cover" />
+            <img src={track.image_url || music} className="w-10 h-10 rounded object-cover" />
             <p className="font-medium">{track.title}</p>
           </div>
 

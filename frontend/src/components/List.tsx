@@ -22,9 +22,17 @@ interface ListProps {
   isArtist?: boolean;
   playlistTracks?: any[];
   albumTracks?: any[];
+  imgNone?: any;
 }
 
-const List: React.FC<ListProps> = ({ title, items, isArtist ,playlistTracks ,albumTracks}) => {
+const List: React.FC<ListProps> = ({
+  title,
+  items,
+  isArtist,
+  playlistTracks,
+  albumTracks,
+  imgNone,
+}) => {
   if (!items.length) {
     return (
       <section className="mb-10">
@@ -42,7 +50,9 @@ const List: React.FC<ListProps> = ({ title, items, isArtist ,playlistTracks ,alb
         <Item
           title={items[0].title || ""}
           artist={items[0].artist}
-          image_url={items[0].image_url|| items[0].cover_image || "/placeholder.png"}
+          image_url={
+            items[0].image_url || items[0].cover_image || "/placeholder.png"
+          }
           avatar={items[0].avatar}
           name={items[0].name}
           isArtist={isArtist}
@@ -61,14 +71,24 @@ const List: React.FC<ListProps> = ({ title, items, isArtist ,playlistTracks ,alb
                   id={item.id}
                   title={item.title || ""}
                   artist={item.artist}
-                  image_url={item.image_url || item.cover_image || "/placeholder.png"}
-                  audio_url={item.audio_url}     
-                  avatar={item.avatar}
+                  image_url={
+                    item.image_url || item.cover_image || imgNone
+                  }
+                  audio_url={item.audio_url}
+                  avatar={item.avatar || imgNone}
                   name={item.name}
                   isArtist={isArtist}
                   playlistTracks={item.tracks || []}
                   albumTracks={item.tracks || []}
-                  type={isArtist ? "artist" : playlistTracks ? "playlist" : albumTracks ? "album" : "track"}
+                  type={
+                    isArtist
+                      ? "artist"
+                      : playlistTracks
+                      ? "playlist"
+                      : albumTracks
+                      ? "album"
+                      : "track"
+                  }
                 />
               </CarouselItem>
             ))}

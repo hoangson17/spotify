@@ -4,7 +4,7 @@ import { useLocation, Link } from "react-router-dom";
 import { searchAll } from "@/stores/actions/searchActions";
 import { Play } from "lucide-react";
 import { setCurrentSong } from "@/stores/actions/playerActions";
-
+import music from "../../assets/music.jpg";
 const Search = () => {
   const dispatch = useDispatch();
   const { results, loading } = useSelector((state: any) => state.search);
@@ -38,7 +38,7 @@ const Search = () => {
                 <div className="flex items-center gap-4">
                   <span className="w-6 text-gray-400 text-right">{index + 1}</span>
                   <img
-                    src={track.image_url}
+                    src={track.image_url || music}
                     alt={track.title}
                     className="w-12 h-12 rounded object-cover"
                   />

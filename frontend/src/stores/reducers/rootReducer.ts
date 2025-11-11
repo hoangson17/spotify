@@ -9,6 +9,7 @@ import playlistReducer from "./playlistReducer";
 import albumReducer from "./albumReducer";
 import searchReducer from "./searchReducer";
 import actionTypes from "../actions/actionTypes";
+import likeTrackReducer from "./likeTrackReducer";
 
 const authPersistConfig = {
   key: "auth",
@@ -24,6 +25,7 @@ const appReducer = combineReducers({
   playlist: playlistReducer,
   albums: albumReducer,
   search: searchReducer,
+  likedTracks: likeTrackReducer,
 });
 
 const rootReducer = (state:any, action:any) => {

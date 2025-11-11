@@ -168,3 +168,13 @@
   border-color: #1ED760 !important;
   box-shadow: 0 0 0 4px rgba(29, 185, 84, 0.3) !important; 
 }
+
+
+/* Ẩn thanh scroll nhưng vẫn cho scroll */
+.hide-scrollbar {
+  scrollbar-width: none; 
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; 
+}

@@ -1,13 +1,13 @@
-import { Body, Controller, Delete, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 
 @Controller('like-tracks')
 export class LikeTracksController {
     constructor(private readonly userService: UserService) {}
 
-      @Post('get')
-      async getTracks(@Body() body: any) {
-        return this.userService.getTracks(body.userId);
+      @Get(':userId')
+      async getTracks(@Param('userId') userId: number) {
+        return this.userService.getTracks(userId);
       }
 
       @Post('sync')
@@ -22,6 +22,6 @@ export class LikeTracksController {
     
       @Delete('delete')
       async deleteTracks(@Body() body: any) {
-        return this.userService.deleteTracks(body.userId);
+        return this.userService.deleteTracks(body.userId, body.trackIds);
       }
 }
