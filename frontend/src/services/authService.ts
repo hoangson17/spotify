@@ -1,3 +1,4 @@
+import { register } from "@/stores/actions/authActions";
 import axiosInstance from "../axiosConfig";
 
 export const authService = {
@@ -8,6 +9,8 @@ export const authService = {
     axiosInstance.post("/auth/google/callback", {
       accessToken: accessTokenFromGoogle,
     }),
+
+  register: (body: any) => axiosInstance.post("/auth/register", body),
 
   logout: () => {
     localStorage.removeItem("persist:auth");

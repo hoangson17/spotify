@@ -1,5 +1,6 @@
 import actionTypes from "./actionTypes";
 import { authService } from "../../services/authService";
+import { toast } from "sonner";
 
 export const login = (email: string, password: string) => async (dispatch: any) => {
   dispatch({ type: actionTypes.LOGIN_REQUEST });
@@ -12,10 +13,36 @@ export const login = (email: string, password: string) => async (dispatch: any) 
   } catch (err: any) {
     dispatch({
       type: actionTypes.LOGIN_FAILURE,
-      payload: err.response?.data?.message || "Login failed",
+      payload: err.response?.data?.message || "Sai tài khoản hoặc mật khẩu",
     });
   }
 };
+
+export const register = (body: any) => async (dispatch: any) => {
+  try {
+    const res = await authService.register(body);
+
+    dispatch({
+      type: actionTypes.REGISTER_SUCCESS,
+      payload: res.data,
+    });
+
+    toast.success("Đăng ký thành công");
+    return res.data; 
+  } catch (err: any) {
+    const errorMessage =
+      err.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
+
+    dispatch({
+      type: actionTypes.REGISTER_FAIL,
+      payload: errorMessage,
+    });
+
+    toast.error(errorMessage);
+    throw new Error(errorMessage); 
+  }
+};
+
 
 export const loginWithGoogle = (accessTokenFromGoogle: string) => async (dispatch: any) => {
   dispatch({ type: actionTypes.LOGIN_REQUEST });

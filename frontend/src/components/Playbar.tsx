@@ -6,7 +6,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { togglePlay } from "@/stores/actions/playerActions";
 import { toast } from "sonner";
 import { likeTrackService } from "@/services/likeTrackService";
-import { addLikeTrack, removeLikeTrack } from "@/stores/actions/likeTracksAction";
+import {
+  addLikeTrack,
+  removeLikeTrack,
+} from "@/stores/actions/likeTracksAction";
 
 const {
   FaPlay,
@@ -29,8 +32,8 @@ const Playbar: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
-  const auth = localStorage.getItem("persist:auth");
-  const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
+  const user = useSelector((state: any) => state.auth.user);
+
   // Đồng bộ playQueue khi queue thay đổi
   useEffect(() => {
     if (queue.length > 0) {
@@ -43,7 +46,7 @@ const Playbar: React.FC = () => {
   useEffect(() => {
     const track = playQueue[currentIndex];
     if (track && audioRef.current) {
-      audioRef.current.src = track.audio_url;
+      audioRef.current.src = `${import.meta.env.VITE_SERVER_API}${track.audio_url}`;
       audioRef.current.load();
       if (isPlaying) audioRef.current.play().catch((err) => console.warn(err));
     }
@@ -125,38 +128,39 @@ const Playbar: React.FC = () => {
   const isLiked = likedTracks?.some((t: any) => t.id === currentTrack?.id);
 
   const handleLikeTrack = async (userId: number, trackId: number) => {
-  try {
-    if (!userId) {
-      toast.error("Bạn cần đăng nhập để thích bài hát");
-      return;
-    }
-
-    if (!isLiked) {
-      const response = await likeTrackService.addLikeTracks(userId, [trackId]);
-
-      if (response.status === 201) {
-        toast.success("Đã thích bài hát");
-        dispatch(addLikeTrack(currentTrack));
-      } else {
-        toast.error(response.data.message);
+    try {
+      if (!userId) {
+        toast.error("Bạn cần đăng nhập để thích bài hát");
+        return;
       }
 
-    } else {
-      const response = await likeTrackService.removeLikeTracks(userId, [trackId]);
+      if (!isLiked) {
+        const response = await likeTrackService.addLikeTracks(userId, [
+          trackId,
+        ]);
 
-      if (response.status === 200) {
-        toast.success("Đã bỏ thích bài hát");
-        dispatch(removeLikeTrack(currentTrack)); 
+        if (response.status === 201) {
+          toast.success("Đã thích bài hát");
+          dispatch(addLikeTrack(currentTrack));
+        } else {
+          toast.error(response.data.message);
+        }
       } else {
-        toast.error(response.data.message);
+        const response = await likeTrackService.removeLikeTracks(userId, [
+          trackId,
+        ]);
+
+        if (response.status === 200) {
+          toast.success("Đã bỏ thích bài hát");
+          dispatch(removeLikeTrack(currentTrack));
+        } else {
+          toast.error(response.data.message);
+        }
       }
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi");
     }
-
-  } catch (error) {
-    toast.error("Đã xảy ra lỗi");
-  }
-};
-
+  };
 
   return (
     <>
@@ -172,7 +176,7 @@ const Playbar: React.FC = () => {
         <div className="flex items-center gap-3 w-[30%] min-w-[200px]">
           {currentTrack && (
             <img
-              src={currentTrack.image_url || songImg}
+              src={`${import.meta.env.VITE_SERVER_API}${currentTrack?.image_url}` || songImg}
               alt={currentTrack.title}
               className="w-[56px] h-[56px] rounded-md object-cover"
             />

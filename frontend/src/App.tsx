@@ -4,7 +4,6 @@ import {
   Home,
   HomePage,
   LikeTracks,
-  Login,
   Playlist,
   Search,
 } from "./Page/Public";
@@ -13,6 +12,7 @@ import Google from "./Page/Public/Google";
 import { AddAlbum, AddArtist, Admin } from "./Page/System";
 import AuthMiddlewares from "./Middleware/AuthMiddlewares";
 import { Toaster } from "@/components/ui/sonner";
+import Auth from "./Page/Public/Auth";
 
 function App() {
   return (
@@ -29,7 +29,8 @@ function App() {
               <Route path="/like-tracks" element={<LikeTracks />} />
             </Route>
           </Route>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Auth type="login" />} />
+          <Route path="/register" element={<Auth type="register" />} />
           <Route path="/auth/google/callback" element={<Google />} />
           <Route path="/admin" element={<Admin />}>
             <Route path="artist" element={<AddArtist />} />
@@ -37,7 +38,7 @@ function App() {
           </Route>
         </Routes>
       </div>
-      <Toaster />
+      <Toaster position="top-center" toastOptions={{ duration: 2000 }} />
     </>
   );
 }

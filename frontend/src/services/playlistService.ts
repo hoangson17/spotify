@@ -21,18 +21,18 @@ export const playlistService = {
         const response = await axiosInstance.delete(`/playlist/${id}`);
         return response;
     },
-    syncTrack: async (id: number, trackIds: number[]) => {
-        const response = await axiosInstance.patch(`/playlist-track/sync`,{ playlistId:id , trackIds });
+    syncTrack: async (userId: number,id: number, trackIds: number[]) => {
+        const response = await axiosInstance.patch(`/playlist-track/sync/${userId}`,{ playlistId:id , trackIds });
         return response;
     },
 
-    addTrack: async (id: number, trackIds: number[]) => {
-        const response = await axiosInstance.post(`/playlist-track/add`, { playlistId:id , trackIds });
+    addTrack: async (userId: number,id: number, trackIds: number[]) => {
+        const response = await axiosInstance.post(`/playlist-track/add/${userId}`, { playlistId:id , trackIds });
         return response;
     },
 
-    removeTrack: async (id: number, trackIds: number[]) => {
-        const response = await axiosInstance.patch(`/playlist/${id}/remove`, { trackIds });
+    removeTrack: async (userId: number,id: number, trackIds: number[]) => {
+        const response = await axiosInstance.patch(`/playlist/${id}/remove/${userId}`, { trackIds });
         return response;
     },
 

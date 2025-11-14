@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Param, Post } from '@nestjs/common';
 import { PlaylistService } from './playlist.service';
 
 @Controller('playlist-track')
@@ -7,18 +7,18 @@ export class PlaylistTrackController {
         private playlistService: PlaylistService
     ) {}
 
-    @Post('sync')
-    syncTrack(@Body() body: any) {
-        return this.playlistService.syncTrack(body.playlistId, body.trackIds);
+    @Post('sync/:id')
+    syncTrack(@Param('id') id: number,@Body() body: any) {
+        return this.playlistService.syncTrack(id,body.playlistId, body.trackIds);
     }
 
-    @Post('add')
-    addTrack(@Body() body: any) {
-        return this.playlistService.addTrack(body.playlistId, body.trackIds);
+    @Post('add/:id')
+    addTrack(@Param('id') id: number,@Body() body: any) {
+        return this.playlistService.addTrack(id,body.playlistId, body.trackIds);
     }
 
-    @Post('delete')
-    deleteTracks(@Body() body: any) {
-        return this.playlistService.deleteTracks(body.playlistId);
+    @Post('delete/:id')
+    deleteTracks(@Param('id') id: number, @Body() body: any) {
+        return this.playlistService.deleteTracks(id,body.playlistId);
     }
 }

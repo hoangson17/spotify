@@ -19,7 +19,7 @@ export class AlbumService {
 
     create(data: any,file?: Express.Multer.File){
         if(file){
-            if(file.mimetype.startsWith('image/')) data.cover_image = `http://localhost:3000/uploads/images/${file.filename}`
+            if(file.mimetype.startsWith('image/')) data.cover_image = `/uploads/images/${file.filename}`
             else throw new Error('Invalid file type');
         }
         return this.albumRepository.save(data);
@@ -41,7 +41,7 @@ export class AlbumService {
                     console.warn("loi xoa anh cu", err);
                 }
             }
-            if(file.mimetype.startsWith('image/')) data.cover_image = `http://localhost:3000/uploads/images/${file.filename}`
+            if(file.mimetype.startsWith('image/')) data.cover_image = `/uploads/images/${file.filename}`
             else throw new Error('Invalid file type');
         }
         this.albumRepository.update(id, data);

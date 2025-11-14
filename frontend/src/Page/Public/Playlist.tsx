@@ -52,7 +52,7 @@ const Playlist = () => {
     try {
       console.log("Adding track:", trackIds, "to playlist:", id);
 
-      const res = await playlistService.addTrack(Number(id), [trackIds]);
+      const res = await playlistService.addTrack(user.id,Number(id), [trackIds]);
       await dispatch(getPlaylistById(Number(id)) as any);
       toast.success(`Thêm bài hát thành công`);
     } catch (error: any) {
@@ -67,7 +67,7 @@ const Playlist = () => {
         {playlistId?.id && (
           <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
             <img
-              src={playlistId.cover_image || music}
+              src={`${import.meta.env.VITE_SERVER_API}${playlistId.cover_image}` || music}
               className="w-48 h-48 rounded shadow-lg object-cover"
               alt=""
             />
@@ -121,7 +121,7 @@ const Playlist = () => {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={track.image_url || music}
+                        src={`${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
                         className="w-10 h-10 rounded object-cover"
                       />
                       <div>
@@ -186,7 +186,7 @@ const Playlist = () => {
 
               <div className="flex items-center gap-3">
                 <img
-                  src={track.image_url}
+                  src={`${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
                   className="w-10 h-10 rounded object-cover"
                 />
                 <div>

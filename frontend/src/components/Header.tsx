@@ -16,6 +16,8 @@ import {
 } from "@radix-ui/react-dropdown-menu";
 import { FileUser, LogOut, Settings } from "lucide-react";
 import { FaGrinStars } from "react-icons/fa";
+import { logout } from "@/stores/actions/authActions";
+import actionTypes from "@/stores/actions/actionTypes";
 
 const {
   FaSpotify,
@@ -40,7 +42,9 @@ const Header: React.FC = () => {
   };
 
   const handleLogout = () => {
-    dispatch({ type: "LOGOUT" });
+    dispatch({
+      type:actionTypes.LOGOUT
+    });
   };
 
   return (

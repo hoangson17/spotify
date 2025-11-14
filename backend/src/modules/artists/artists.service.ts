@@ -28,7 +28,7 @@ export class ArtistsService {
 
   async create(data: any, image?: Express.Multer.File) {
     if(image){ 
-      if(image.mimetype.startsWith('image/')) data.avatar = `http://localhost:3000/uploads/images/${image.filename}`
+      if(image.mimetype.startsWith('image/')) data.avatar = `/uploads/images/${image.filename}`
       else throw new Error('Invalid file type');
     }
     return await this.artistRepository.save(data);
@@ -50,7 +50,7 @@ export class ArtistsService {
           console.warn("lỗi xóa ảnh cũ", err);
         }
       }
-      if(image.mimetype.startsWith('image/')) data.avatar = `http://localhost:3000/uploads/images/${image.filename}`
+      if(image.mimetype.startsWith('image/')) data.avatar = `/uploads/images/${image.filename}`
       else throw new Error('Invalid file type');
     }
     await this.artistRepository.update(id, data);

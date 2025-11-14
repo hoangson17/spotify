@@ -39,12 +39,12 @@ export class TrackService {
   ) {
     if (image) {
       if (image.mimetype.startsWith('image/'))
-        data.image = `http://localhost:3000/uploads/images/${image.filename}`;
+        data.image = `/uploads/images/${image.filename}`;
       else throw new Error('Invalid file type');
     }
     if (audio) {
       if (audio.mimetype.startsWith('audio/'))
-        data.audio = `http://localhost:3000/uploads/audio/${audio.filename}`;
+        data.audio = `/uploads/audio/${audio.filename}`;
       else throw new Error('Invalid file type');
     }
     const newTrack = this.trackRepository.create({
@@ -91,7 +91,7 @@ export class TrackService {
         }
       }
       if (image.mimetype.startsWith('image/'))
-        data.image = `http://localhost:3000/uploads/images/${image.filename}`;
+        data.image = `/uploads/images/${image.filename}`;
       else throw new Error('Invalid file type image');
     }
     if (audio) {
@@ -108,7 +108,7 @@ export class TrackService {
         }
       }
       if (audio.mimetype.startsWith('audio/'))
-        data.audio = `http://localhost:3000/uploads/audio/${audio.filename}`;
+        data.audio = `/uploads/audio/${audio.filename}`;
       else throw new Error('Invalid file type audio');
     }
     const updatedTrack = {

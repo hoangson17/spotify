@@ -30,7 +30,7 @@ export class UserService {
           console.warn("lỗi xóa ảnh cũ", err);
         }
       }
-      if (file.mimetype.startsWith('image/')) data.avatar = `http://localhost:3000/uploads/images/${file.filename}`;
+      if (file.mimetype.startsWith('image/')) data.avatar = `/uploads/images/${file.filename}`;
       else throw new Error('Invalid file type');
       // else if (file.mimetype === 'audio/mpeg') data.audio = `http://localhost:3000/uploads/audio/${file.filename}`;
     }

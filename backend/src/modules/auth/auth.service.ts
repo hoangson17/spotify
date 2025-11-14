@@ -1,5 +1,5 @@
 import { InjectRedis } from '@nestjs-modules/ioredis';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import Redis from 'ioredis';
@@ -51,37 +51,39 @@ export class AuthService {
         redirect_uri: process.env.GOOGLE_CALLBACK_URL,
         grant_type: 'authorization_code',
       }),
-    });    
+    });
     if (!response.ok) {
       return;
     }
     return response.json();
   }
 
-  async googleLogin(accessToken: string){
-    const response = await fetch(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`,);
+  async googleLogin(accessToken: string) {
+    const response = await fetch(
+      `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${accessToken}`,
+    );
     const profileFromGoogle: unknown = await response.json();
     console.log(profileFromGoogle);
-    const {email,name,picture} = profileFromGoogle as {
-        email:string;
-        name:string;
-        picture:string
+    const { email, name, picture } = profileFromGoogle as {
+      email: string;
+      name: string;
+      picture: string;
     };
-    let user = await this.userRepository.findOne({where:{email}});
-    if(!user){
-        user = await this.userRepository.save({
-            name,
-            email,
-            avatar:picture
-        })
+    let user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      user = await this.userRepository.save({
+        name,
+        email,
+        avatar: picture,
+      });
     }
     return this.createToken(user);
   }
 
-  async profile(id:number){
-    const user = await this.userRepository.findOne({where:{id}});
-    if(!user){
-        return false;
+  async profile(id: number) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      return false;
     }
     return user;
   }
@@ -106,59 +108,68 @@ export class AuthService {
     }
   };
 
-  async refreshToken(body:any){
+  async refreshToken(body: any) {
     const refreshToken = body.refreshToken;
-    try{
-        const decode = this.jwtService.verify(refreshToken, {
-            secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-        });
-        const token = this.jwtService.sign({
-            userId: decode.userId,
-            email: decode.email,
-        });
-        const jtiRefreshToken  = decode.jti;
-        const accessToken = await this.redis.get(`jwt_refresh_${jtiRefreshToken}`);
-        if(accessToken){
-            const now = Date.now() / 1000;
-            const {exp, jtiAccessToken} = JSON.parse(accessToken);
-            if(now <exp){
-                await this.redis.set(`jti_blacklist_${jtiAccessToken}`, jtiAccessToken, 'EX', Math.round(exp - now));
-            }
-        }else{
-            return false;
+    try {
+      const decode = this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+      });
+      const token = this.jwtService.sign({
+        userId: decode.userId,
+        email: decode.email,
+      });
+      const jtiRefreshToken = decode.jti;
+      const accessToken = await this.redis.get(
+        `jwt_refresh_${jtiRefreshToken}`,
+      );
+      if (accessToken) {
+        const now = Date.now() / 1000;
+        const { exp, jtiAccessToken } = JSON.parse(accessToken);
+        if (now < exp) {
+          await this.redis.set(
+            `jti_blacklist_${jtiAccessToken}`,
+            jtiAccessToken,
+            'EX',
+            Math.round(exp - now),
+          );
         }
-        return {
-                accessToken: token,
-                refreshToken
-            };
-    }catch(error){
+      } else {
         return false;
+      }
+      return {
+        accessToken: token,
+        refreshToken,
+      };
+    } catch (error) {
+      return false;
     }
   }
 
-  async logout(jti:string,exp:number){
+  async logout(jti: string, exp: number) {
     const diff = exp - Date.now() / 1000;
     await this.redis.set(`jti_blacklist_${jti}`, jti, 'EX', Math.round(diff));
-    return {sucess:true};
-
+    return { sucess: true };
   }
 
-  async createToken(user: any){
+  async createToken(user: any) {
     const jtiAccessToken = uuid();
     const token = this.jwtService.sign({
-        jti:jtiAccessToken,
-        userId:user.id,
-        email:user.email
-    })
+      jti: jtiAccessToken,
+      userId: user.id,
+      email: user.email,
+    });
     const jtiRefreshToken = uuid();
-    const refreshToken = this.jwtService.sign({
+    const refreshToken = this.jwtService.sign(
+      {
         jti: jtiRefreshToken,
-        userId:user.id,
-        email:user.email
-    },{
+        userId: user.id,
+        email: user.email,
+      },
+      {
         expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRED,
         secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-    });
+      },
+    );
     //Thêm jti vào redis
     //jtiRefreshToken: jtiAccessToken
     //- decoded Access Token để lấy ra exp
@@ -182,43 +193,56 @@ export class AuthService {
     };
   }
 
-  register(body: any) {
+  async register(body: any) {
+    const { email, password, name, avatar } = body;
+
+    const existingUser = await this.userRepository.findOne({
+      where: { email },
+    });
+    if (existingUser) throw new BadRequestException('Email đã được sử dụng');
     body.password = Hash.make(body.password);
-    return this.userRepository.save(body);
+    const newUser = this.userRepository.create(body);
+
+    return await this.userRepository.save(newUser);
   }
 
-  async login(body:any){
-    const user = await this.userRepository.findOne({where:{email:body.email}});
-    if(!user){
-        return false;
+  async login(body: any) {
+    const user = await this.userRepository.findOne({
+      where: { email: body.email },
+    });
+    if (!user) {
+      return false;
     }
-    if(!Hash.compare(body.password,user.password)){
-        return false;
+    if (!Hash.compare(body.password, user.password)) {
+      return false;
     }
     const jtiAccessToken = uuid();
     const token = this.jwtService.sign({
-      jti:jtiAccessToken,
-      userId:user.id,
-      email:user.email
+      jti: jtiAccessToken,
+      userId: user.id,
+      email: user.email,
     });
     const jtiRefreshToken = uuid();
-    const refreshToken = this.jwtService.sign({
-      jti:jtiRefreshToken,
-      userId:user.id,
-      email:user.email
-    },{
-      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRED,
-      secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-    })
+    const refreshToken = this.jwtService.sign(
+      {
+        jti: jtiRefreshToken,
+        userId: user.id,
+        email: user.email,
+      },
+      {
+        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRED,
+        secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+      },
+    );
 
-    const {exp:expAccessToken} = this.verifyToken(token);
-    const {exp:expRefreshToken} = this.verifyRefreshToken(refreshToken);
+    const { exp: expAccessToken } = this.verifyToken(token);
+    const { exp: expRefreshToken } = this.verifyRefreshToken(refreshToken);
     await this.redis.set(
       `jwt_refresh_${jtiRefreshToken}`,
       JSON.stringify({
         jtiAccessToken,
-        exp:expAccessToken,
-        userId:user.id,
+        exp: expAccessToken,
+        userId: user.id,
       }),
       'EX',
       Math.round(expRefreshToken - Date.now() / 1000),
@@ -228,28 +252,28 @@ export class AuthService {
       jtiAccessToken,
       'EX',
       Math.round(expAccessToken - Date.now() / 1000),
-    )
-    await this.redis.keys(`jwt_refresh_*`)
+    );
+    await this.redis.keys(`jwt_refresh_*`);
 
     delete (user as any).password;
 
     return {
-      accessToken:token,
+      accessToken: token,
       refreshToken,
-      user
-    }
+      user,
+    };
   }
 
-  async updateUser(user:any, data: any) {
+  async updateUser(user: any, data: any) {
     const id = user.id;
     const email = data.email;
     const emailExits = await this.userRepository.findOne({
-      where:{
+      where: {
         email,
         id: Not(id),
-      }
+      },
     });
-    if(emailExits) return false
+    if (emailExits) return false;
     const userUpdata = {
       ...user,
       ...data,
@@ -270,5 +294,4 @@ export class AuthService {
 
     return await this.userRepository.findOne({ where: { id } });
   }
-
 }

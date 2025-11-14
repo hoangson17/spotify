@@ -76,7 +76,7 @@ const LikeTrack = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <img src={track.image_url || music} className="w-10 h-10 rounded object-cover" />
+            <img src={`${import.meta.env.VITE_SERVER_API}${track.image_url}` || music} className="w-10 h-10 rounded object-cover" />
             <p className="font-medium">{track.title}</p>
           </div>
 

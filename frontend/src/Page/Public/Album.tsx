@@ -40,7 +40,7 @@ const Album = () => {
       {/* HEADER */}
       <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
         <img
-          src={album.cover_image || music}
+          src={`${import.meta.env.VITE_SERVER_API}${album.cover_image}` || music}
           alt={album.title}
           className="w-48 h-48 rounded shadow-lg object-cover"
         />
@@ -84,7 +84,7 @@ const Album = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <img src={track.image_url || music} className="w-10 h-10 rounded object-cover" />
+            <img src={`${import.meta.env.VITE_SERVER_API}${track.image_url}` || music} className="w-10 h-10 rounded object-cover" />
             <p className="font-medium">{track.title}</p>
           </div>
 
@@ -100,7 +100,7 @@ const Album = () => {
             className="group cursor-pointer hover:bg-white/10 p-3 rounded-lg transition inline-block"
           >
             <img
-              src={album.artist.avatar}
+              src={`${import.meta.env.VITE_SERVER_API}${album.artist.avatar}` || music}
               className="w-44 h-44 object-cover rounded-lg shadow"
             />
             <p className="font-medium mt-3">{album.artist.name}</p>

@@ -23,6 +23,16 @@ const authReducer = (state = initialState, action: any) => {
         accessToken: action.payload.accessToken,
         refreshToken: action.payload.refreshToken,
       };
+    
+    case actionTypes.REGISTER_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        isAuthenticated: true,
+        user: action.payload.user,
+        accessToken: action.payload.accessToken,
+        refreshToken: action.payload.refreshToken,
+      };
 
     case actionTypes.LOGIN_FAILURE:
       return { ...state, loading: false, error: action.payload };

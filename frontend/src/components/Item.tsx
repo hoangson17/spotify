@@ -1,6 +1,6 @@
 import React from "react";
 import clsx from "clsx";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { queue, setCurrentSong } from "@/stores/actions/playerActions";
 import { Play } from "lucide-react";
@@ -59,7 +59,10 @@ const Item: React.FC<ItemProps> = ({
     setImgError(true);
   };
 
+  const user = useSelector((state: any) => state.auth.user);
+
   const handlePlay = (e: React.MouseEvent) => {
+    if(!user) return;
     e.stopPropagation();
 
     let tracks: Track[] = [];
@@ -114,8 +117,7 @@ const Item: React.FC<ItemProps> = ({
   
 
   const showPlayButton = playlistTracks?.length || albumTracks?.length || audio_url;
-
-
+  
   return (
     <div
       onClick={handleClick}
@@ -137,13 +139,13 @@ const Item: React.FC<ItemProps> = ({
             isArtist ? "rounded-full" : "rounded-md",
             isLoading && "animate-pulse"
           )}
-          src={imgSrc}
+          src={`${import.meta.env.VITE_SERVER_API}${imgSrc}`}
           alt={displayTitle || "Media item"}
           onError={handleImageError}
           loading="lazy"
         />
 
-        {showPlayButton && (
+        {showPlayButton &&  (
           <button
             onClick={handlePlay}
             className={clsx(

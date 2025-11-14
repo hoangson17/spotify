@@ -36,8 +36,9 @@ const SidebarCustom = () => {
   const [editingPlaylist, setEditingPlaylist] = useState<any>(null);
 
   const dispatch: any = useDispatch();
-  const auth = localStorage.getItem("persist:auth");
-  const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
+  const user = useSelector((state: any) => state.auth.user);
+  console.log(user);
+  
   const playlist = useSelector((state: any) => state.playlist.playlist);
   const { likedTracks, loading } = useSelector(
     (state: any) => state.likedTracks
@@ -125,7 +126,7 @@ const SidebarCustom = () => {
   };
 
   return (
-    <div className="bg-[#121212] h-full text-white rounded-xl">
+    <div className="bg-[#121212] h-full text-white rounded-xl  ">
       <Dialog
         open={Boolean(editingPlaylist)}
         onOpenChange={() => setEditingPlaylist(null)}
@@ -182,7 +183,7 @@ const SidebarCustom = () => {
       </Dialog>
 
       <aside
-        className={`bg-[#121212] border-r border-[#1f1f1f] flex flex-col transition-all duration-300 rounded-xl ${
+        className={`bg-[#121212] h-full border-r border-[#1f1f1f] transition-all duration-300 rounded-xl ${
           collapsed ? "w-[72px]" : "w-[280px]"
         }`}
       >
@@ -220,7 +221,7 @@ const SidebarCustom = () => {
 
         {user ? (
           userPlaylists.length > 0 ? (
-            <nav className="flex-1 mt-2">
+            <nav className="h-full mt-2 overflow-y-auto scrollbar-hidden">
               {likedTracks.length > 0 && (
                 <Link
                   to={`/like-tracks`}

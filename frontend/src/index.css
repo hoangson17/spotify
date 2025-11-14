@@ -170,11 +170,16 @@
 }
 
 
-/* Ẩn thanh scroll nhưng vẫn cho scroll */
-.hide-scrollbar {
-  scrollbar-width: none; 
-}
+.scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
 
-.hide-scrollbar::-webkit-scrollbar {
-  display: none; 
-}
+  /* For Firefox */
+  .scrollbar-hidden {
+    scrollbar-width: none;
+  }
+
+  /* For IE and Edge */
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+  }
