@@ -3,14 +3,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, Link } from "react-router-dom";
 import { searchAll } from "@/stores/actions/searchActions";
 import { Play } from "lucide-react";
-import { setCurrentSong } from "@/stores/actions/playerActions";
+import { queue } from "@/stores/actions/playerActions";
 import music from "../../assets/music.jpg";
 const Search = () => {
   const dispatch = useDispatch();
   const { results, loading } = useSelector((state: any) => state.search);
   const query = new URLSearchParams(useLocation().search).get("q") || "";
 
-    const handlePlayTrack = (track: any) => dispatch(setCurrentSong(track));
+    const handlePlayTrack = (track: any) => dispatch(queue([track]));
   
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const Search = () => {
                 <div className="flex items-center gap-4">
                   <span className="w-6 text-gray-400 text-right">{index + 1}</span>
                   <img
-                    src={track.image_url || music}
+                    src={ `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
                     alt={track.title}
                     className="w-12 h-12 rounded object-cover"
                   />
@@ -71,7 +71,7 @@ const Search = () => {
               >
                 <div className="w-24 h-24 rounded-full overflow-hidden relative">
                   <img
-                    src={artist.avatar}
+                    src={`${import.meta.env.VITE_SERVER_API}${artist.avatar}`}
                     alt={artist.name}
                     className="w-full h-full object-cover"
                   />
@@ -99,7 +99,7 @@ const Search = () => {
               >
                 <div className="w-32 h-32 rounded overflow-hidden relative">
                   <img
-                    src={album.cover_image}
+                    src={`${import.meta.env.VITE_SERVER_API}${album.cover_image}`}
                     alt={album.title}
                     className="w-full h-full object-cover"
                   />

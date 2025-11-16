@@ -2,6 +2,7 @@ import actionTypes from "../actions/actionTypes";
 
 const initialState = {
     artists: [] as any,
+    artistSearch: [] as any,
     loading: false,
     error: null as string | null,
 };
@@ -12,6 +13,7 @@ const artistReducer = (state = initialState,action: any)=>{
             return {
                 ...state,
                 artists: action.artists,
+                artistSearch: action.artists,
                 loading: false,
                 error: null,
             };

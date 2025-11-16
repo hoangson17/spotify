@@ -13,6 +13,11 @@ import { UserModule } from './modules/user/user.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { SearchModule } from './modules/search/search.module';
+import { BullModule } from '@nestjs/bullmq';
+import Mail from './utils/mail';
+import { EmailConsumer } from './consumer/email.consumer';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
 
 @Module({
   imports: [
@@ -40,6 +45,25 @@ import { SearchModule } from './modules/search/search.module';
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
     }),
+    MailerModule.forRoot({
+      transport: `smtps://${process.env.MAIL_USERNAME}:${process.env.MAIL_PASSWORD}@${process.env.MAIL_HOST}`,
+      defaults: {
+        from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM}>`,
+      },
+      template: {
+        dir: __dirname + '/mail/templates',
+        adapter: new EjsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
     AuthModule,
     ArtistsModule,
     PlaylistModule,
@@ -49,6 +73,6 @@ import { SearchModule } from './modules/search/search.module';
     SearchModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, Mail, EmailConsumer],
 })
 export class AppModule {}

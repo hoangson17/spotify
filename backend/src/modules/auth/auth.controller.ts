@@ -64,5 +64,10 @@ export class AuthController {
     }
     return result;
   }
+ 
+  @Post('/test')
+  tes() {
+    return this.authService.testMail();
+  }
 
 }

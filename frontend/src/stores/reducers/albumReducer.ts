@@ -2,6 +2,7 @@ import actionTypes from "../actions/actionTypes";
 
 const initialState = {
     albums: [] as any,
+    albumSearch: [] as any,
     loading: false,
     error: null as string | null,
 };

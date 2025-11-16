@@ -1,13 +1,16 @@
 import { InjectRedis } from '@nestjs-modules/ioredis';
+import { MailerService } from '@nestjs-modules/mailer';
+import { InjectQueue } from '@nestjs/bullmq';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bullmq';
+import { Template } from 'ejs';
 import Redis from 'ioredis';
 import { User } from 'src/entities/user.entity';
 import Hash from 'src/utils/hashing';
 import { Not, Repository } from 'typeorm';
 import { v4 as uuid } from 'uuid';
-
 type GoogleParams = {
   client_id: string;
   redirect_uri: string;
@@ -21,6 +24,8 @@ export class AuthService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private readonly mailService: MailerService,
+    @InjectQueue('mailRegister') private mailQueue: Queue,
     @InjectRedis() private readonly redis: Redis,
   ) {}
 
@@ -76,7 +81,27 @@ export class AuthService {
         email,
         avatar: picture,
       });
+      await this.mailQueue.add(
+        'send-mail',
+        {
+          to: email,
+          subject: 'Mail xác nhận đăng kí',
+          content: {
+            template: 'welcome',
+            context: {
+              name: name,
+            },
+          },
+        },
+        {
+          delay: 3000,
+          attempts: 3,
+          backoff: 5000,
+          removeOnFail: true,
+        },
+      );
     }
+
     return this.createToken(user);
   }
 
@@ -202,8 +227,44 @@ export class AuthService {
     if (existingUser) throw new BadRequestException('Email đã được sử dụng');
     body.password = Hash.make(body.password);
     const newUser = this.userRepository.create(body);
-
+    await this.mailQueue.add(
+      'send-mail',
+      {
+        to: email,
+        subject: 'Mail xác nhận đăng kí',
+        content: {
+          template: 'welcome',
+          context: {
+            name: name,
+          },
+        },
+      },
+      {
+        delay: 3000,
+        attempts: 3,
+        backoff: 5000,
+        removeOnFail: true,
+      },
+    );
     return await this.userRepository.save(newUser);
+  }
+
+  async testMail() {
+    const job = await this.mailQueue.add(
+      'send-mail',
+      {
+        to: 'tranhoangson03@gmail.com',
+        subject: 'Email từ queue',
+        content: 'welcome',
+      },
+      {
+        delay: 3000,
+        attempts: 3,
+        backoff: 5000,
+        removeOnFail: true,
+      },
+    );
+    return job;
   }
 
   async login(body: any) {

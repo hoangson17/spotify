@@ -37,7 +37,7 @@ const SidebarCustom = () => {
 
   const dispatch: any = useDispatch();
   const user = useSelector((state: any) => state.auth.user);
-  console.log(user);
+  // console.log(user);
   
   const playlist = useSelector((state: any) => state.playlist.playlist);
   const { likedTracks, loading } = useSelector(

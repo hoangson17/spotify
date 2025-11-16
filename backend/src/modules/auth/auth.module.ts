@@ -5,10 +5,13 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { BullModule } from '@nestjs/bullmq';
+import Mail from 'src/utils/mail';
+import { EmailConsumer } from 'src/consumer/email.consumer';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService,Mail,EmailConsumer],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true
@@ -18,6 +21,10 @@ import { JwtModule } from '@nestjs/jwt';
       global: true,
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: process.env.JWT_TOKEN_EXPIRED },
-    }),],
-})
+    }),
+    BullModule.registerQueue({
+      name: 'mailRegister',
+    })
+  ],
+}) 
 export class AuthModule {}
