@@ -9,6 +9,7 @@ import {
   Query,
   UploadedFile,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { TrackService } from './track.service';
@@ -17,6 +18,8 @@ import {
   FileInterceptor,
 } from '@nestjs/platform-express';
 import { multerConfig } from 'src/config/multer.config';
+import { RoleGuard } from 'src/guards/role/role.guard';
+import { AuthGuard } from 'src/guards/auth/auth.guard';
 
 @Controller('track')
 export class TrackController {
@@ -37,6 +40,7 @@ export class TrackController {
     return this.trackService.findOne(id);
   }
 
+  @UseGuards(RoleGuard)
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor(
@@ -57,11 +61,13 @@ export class TrackController {
     return this.trackService.create(data, image, audio);
   }
 
+  @UseGuards(RoleGuard)
   @Patch(':id')
   update(@Param('id') id: number, @Body() data: any) {
     return this.trackService.update(id, data);
   }
 
+  @UseGuards(RoleGuard)
   @Delete(':id')
   delete(@Param('id') id: number) {
     return this.trackService.delete(id);

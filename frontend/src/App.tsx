@@ -9,10 +9,11 @@ import {
 } from "./Page/Public";
 import { Route, Routes } from "react-router-dom";
 import Google from "./Page/Public/Google";
-import { AddAlbum, AddArtist, Admin } from "./Page/System";
+import { AddAlbum, AddArtist, AddPlayList, AddTrack, Admin, User } from "./Page/System";
 import AuthMiddlewares from "./Middleware/AuthMiddlewares";
 import { Toaster } from "@/components/ui/sonner";
 import Auth from "./Page/Public/Auth";
+import Profile from "./Page/Public/Profile";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
               <Route path="/album/:id" element={<Album />} />
               <Route path="/search" element={<Search />} />
               <Route path="/like-tracks" element={<LikeTracks />} />
+              <Route path="/profile" element={<Profile />} />
             </Route>
           </Route>
           <Route path="/login" element={<Auth type="login" />} />
@@ -35,6 +37,9 @@ function App() {
           <Route path="/admin" element={<Admin />}>
             <Route path="artist" element={<AddArtist />} />
             <Route path="album" element={<AddAlbum />} />
+            <Route path="track" element={<AddTrack />} />
+            <Route path="user" element={<User />} />
+            <Route path="playlist" element={<AddPlayList />} />
           </Route>
         </Routes>
       </div>

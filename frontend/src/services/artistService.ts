@@ -7,4 +7,7 @@ export const artistService = {
     getArtistById(id: number) {
         return AxiosInstance.get(`/artists/${id}`);
     },
+    removeArtist(id: number) {
+        return AxiosInstance.delete(`/artists/${id}`);
+    }
 };

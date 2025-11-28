@@ -7,6 +7,19 @@ import { useDispatch, useSelector } from "react-redux";
 import { login, register } from "@/stores/actions/authActions";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@radix-ui/react-dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { authService } from "@/services/authService";
 
 const { FaSpotify } = icons;
 
@@ -68,19 +81,66 @@ const Auth: React.FC<AuthProps> = ({ type }) => {
     return Object.keys(errs).length === 0;
   };
 
-const handleSubmit = async () => {
-  if (!validate()) return;
-  if (isLogin) {
-    dispatch(login(loginForm.email, loginForm.password));
-  } else {
-    try {
-      await dispatch(register(registerForm)); 
-      setRegisterForm({ email: "", name: "", password: "", avatar: "" });
-      navigate("/login"); 
-    } catch (err: any) {
+  const handleSubmit = async () => {
+    if (!validate()) return;
+    if (isLogin) {
+      dispatch(login(loginForm.email, loginForm.password));
+    } else {
+      try {
+        await dispatch(register(registerForm));
+        setRegisterForm({ email: "", name: "", password: "", avatar: "" });
+        navigate("/login");
+      } catch (err: any) {}
     }
-  }
-};
+  };
+
+  // Forgot Password
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [otpDialogOpen, setOtpDialogOpen] = useState(false);
+
+  const [fpEmail, setFpEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+
+  const sendForgotEmail = async (e: any) => {
+    e.preventDefault();
+
+    try {
+      const res = await authService.forgotPassword(fpEmail);
+
+      if (res.data.success) {
+        toast.success(res.data.message);
+        setEmailDialogOpen(false);
+
+        setTimeout(() => setOtpDialogOpen(true), 60);
+      } else {
+        toast.error("Lỗi gửi OTP!");
+      }
+    } catch (err) {
+      toast.error("Lỗi gửi OTP!");
+    }
+  };
+
+  const submitResetPassword = async (e: any) => {
+    e.preventDefault();
+
+    try {
+      const res = await authService.resetPassword({
+        email: fpEmail,
+        otp,
+        newPassword,
+      });
+
+      if (res.data.success) {
+        toast.success("Đổi mật khẩu thành công!");
+        setOtpDialogOpen(false);
+      } else {
+        toast.error(res.data.message);
+      }
+    } catch (err) {
+      toast.error("Lỗi đặt lại mật khẩu!");
+    }
+  };
 
   return (
     <div className="bg-black flex flex-col items-center justify-center h-screen">
@@ -173,6 +233,91 @@ const handleSubmit = async () => {
             >
               {isLogin ? "Sign up" : "Sign in"}
             </Link>
+          </div>
+          <div>
+            {/* FORGOT PASSWORD */}
+            <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-transparent hover:bg-transparent cursor-pointer w-full text-white underline">
+                  Forgot password?
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Quên mật khẩu</DialogTitle>
+                  <DialogDescription>
+                    Nhập email để nhận mã OTP đặt lại mật khẩu
+                  </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={sendForgotEmail} className="grid gap-4">
+                  <div className="grid gap-3">
+                    <Label>Email</Label>
+                    <Input
+                      value={fpEmail}
+                      onChange={(e) => setFpEmail(e.target.value)}
+                      type="email"
+                      placeholder="abc@gmail.com"
+                      required
+                    />
+                  </div>
+
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Hủy</Button>
+                    </DialogClose>
+                    <Button type="submit">Tiếp tục</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+
+            {/* OTP + NEW PASSWORD DIALOG */}
+            <Dialog open={otpDialogOpen} onOpenChange={setOtpDialogOpen}>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Nhập mã OTP</DialogTitle>
+                  <DialogDescription>
+                    Mã OTP đã gửi đến email: {fpEmail}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <form onSubmit={submitResetPassword} className="grid gap-4">
+                  {/* OTP */}
+                  <div className="grid gap-3">
+                    <Label>OTP</Label>
+                    <Input
+                      type="text"
+                      value={otp}
+                      maxLength={6}
+                      onChange={(e) => setOtp(e.target.value)}
+                      placeholder="Nhập mã 6 số"
+                      required
+                    />
+                  </div>
+
+                  {/* New Password */}
+                  <div className="grid gap-3">
+                    <Label>Mật khẩu mới</Label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Nhập mật khẩu mới"
+                      required
+                    />
+                  </div>
+
+                  <DialogFooter>
+                    <DialogClose asChild>
+                      <Button variant="outline">Hủy</Button>
+                    </DialogClose>
+                    <Button type="submit">Đặt lại mật khẩu</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>

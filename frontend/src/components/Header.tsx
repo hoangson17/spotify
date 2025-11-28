@@ -18,6 +18,7 @@ import { FileUser, LogOut, Settings } from "lucide-react";
 import { FaGrinStars } from "react-icons/fa";
 import actionTypes from "@/stores/actions/actionTypes";
 import { getDataSearch } from "@/stores/actions/searchActions";
+import { jwtDecode } from "jwt-decode";
 
 const {
   FaSpotify,
@@ -37,6 +38,20 @@ const Header: React.FC = () => {
   const [filteredSuggestions, setFilteredSuggestions] = useState<any[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
   const { searchAll } = useSelector((state: any) => state.search);
+
+  const token = localStorage.getItem("accessToken");
+
+  let role = null;
+
+  try {
+    if (token) {
+      const decoded: any = jwtDecode(token);
+      role = decoded?.role;
+    }
+  } catch (err) {
+    role = null; // token lỗi
+  }
+
   // console.log(searchAll);
   useEffect(() => {
     dispatch(getDataSearch() as any);
@@ -196,14 +211,18 @@ const Header: React.FC = () => {
                 </DropdownMenuItem>
 
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
-                  <Settings className="text-lg" /> Profile
+                  <Link to="/profile" className="flex items-center gap-2">
+                      <Settings className="text-lg" /> Profile
+                    </Link>
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
-                  <Link to={`/admin`} className="flex items-center gap-2">
-                    <Settings className="text-lg" /> Manager
-                  </Link>
-                </DropdownMenuItem>
+                {role === "admin" && (
+                  <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <Settings className="text-lg" /> Manager
+                    </Link>
+                  </DropdownMenuItem>
+                )}
 
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
                   <FaGrinStars className="text-lg" /> Update Premium

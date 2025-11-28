@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Track } from 'src/entities/track.entity';
 import { Artist } from 'src/entities/artist.entity';
 import { Album } from 'src/entities/album.entity';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   controllers: [TrackController],
@@ -14,7 +15,8 @@ import { Album } from 'src/entities/album.entity';
     ConfigModule.forRoot({
       isGlobal: true
     }),
-    TypeOrmModule.forFeature([Track,Artist,Album])
+    TypeOrmModule.forFeature([Track,Artist,Album]),
+    AuthModule,
   ],
 })
 export class TrackModule {}

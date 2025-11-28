@@ -64,9 +64,9 @@ export const deletePlaylist = (id: number) => ({
 
 
 
-export const addTrackToPlaylist = (playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+export const addTrackToPlaylist = (userId: number,playlistId: number, trackIds: number[]) => async (dispatch: any) => {
   try {
-    const res = await playlistService.addTrack(playlistId, trackIds);
+    const res = await playlistService.addTrack(userId,playlistId, trackIds);
     if (res.status === 200) {
       dispatch({
         type: actionTypes.PLAYLIST_TRACKS_SUCCESS,
@@ -81,9 +81,9 @@ export const addTrackToPlaylist = (playlistId: number, trackIds: number[]) => as
 };
 
 // Xóa track khỏi playlist
-export const removeTrackFromPlaylist = (playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+export const removeTrackFromPlaylist = (userId: number,playlistId: number, trackIds: number[]) => async (dispatch: any) => {
   try {
-    const res = await playlistService.removeTrack(playlistId, trackIds);
+    const res = await playlistService.removeTrack(userId,playlistId, trackIds);
     if (res.status === 200) {
       dispatch({
         type: actionTypes.PLAYLIST_TRACKS_SUCCESS,
@@ -98,9 +98,9 @@ export const removeTrackFromPlaylist = (playlistId: number, trackIds: number[]) 
 };
 
 // Đồng bộ toàn bộ track của playlist
-export const syncPlaylistTracks = (playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+export const syncPlaylistTracks = (userId: number,playlistId: number, trackIds: number[]) => async (dispatch: any) => {
   try {
-    const res = await playlistService.syncTrack(playlistId, trackIds);
+    const res = await playlistService.syncTrack(userId,playlistId, trackIds);
     if (res.status === 200) {
       dispatch({
         type: actionTypes.PLAYLIST_TRACKS_SUCCESS,

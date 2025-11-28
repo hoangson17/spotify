@@ -12,6 +12,7 @@ import { EmailConsumer } from 'src/consumer/email.consumer';
 @Module({
   controllers: [AuthController],
   providers: [AuthService,Mail,EmailConsumer],
+  exports:[AuthService],
   imports: [
     ConfigModule.forRoot({
       isGlobal: true

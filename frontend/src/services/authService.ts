@@ -1,4 +1,4 @@
-import { register } from "@/stores/actions/authActions";
+import { getAllUsers, register } from "@/stores/actions/authActions";
 import axiosInstance from "../axiosConfig";
 
 export const authService = {
@@ -22,4 +22,35 @@ export const authService = {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
   },
+
+  forgotPassword(email: string) {
+    return axiosInstance.post("/auth/forgot-password", { email });
+  },
+
+  resetPassword(data: { email: string; otp: string; newPassword: string }) {
+    return axiosInstance.post("/auth/reset-password", data);
+  },
+
+  updateProfile(userId: number, formData: FormData) {
+    return axiosInstance.patch(`/user/${userId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data", // axios sẽ tự set boundary
+      },
+    });
+  },
+
+  getAllUsers: (token: any) => 
+  axiosInstance.get("/user/all", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }),
+
+  deleteUser: (id: number, token: any) => 
+  axiosInstance.delete(`/user/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }),
+
 };

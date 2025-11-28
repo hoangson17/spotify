@@ -2,7 +2,6 @@ import actionTypes from "../actions/actionTypes";
 
 const initialState = {
   playlist: [] as any[],
-  playListSearch: [] as any[],
   playlistId: null as any,
   loading: false,
   error: null as string | null,
@@ -14,7 +13,6 @@ const playlistReducer = (state = initialState, action: any) => {
       return {
         ...state,
         playlist: action.playlist,
-        playListSearch: action.playlist,
         loading: false,
         error: null,
       };

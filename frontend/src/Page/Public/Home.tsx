@@ -4,6 +4,7 @@ import HomePage from "./HomePage";
 import { Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+
 const Home: React.FC = () => {
   return (
     <div className="flex flex-col h-screen bg-[#000000] text-white overflow-hidden">

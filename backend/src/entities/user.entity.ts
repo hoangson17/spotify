@@ -12,6 +12,11 @@ import { Track } from './track.entity';
 import { Follower } from './follower.entity';
 import { Playlist } from './playlist.entity';
 
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -43,16 +48,23 @@ export class User {
     },
   })
   tracks: Track[];
- 
+
   @OneToMany(() => Follower, (follower) => follower.follower)
   following: Follower[];
 
   @OneToMany(() => Follower, (follower) => follower.following_id)
   followers: Follower[];
 
-  @OneToMany(() => Playlist,(playlist) => playlist.users)
+  @OneToMany(() => Playlist, (playlist) => playlist.users)
   playlists: Playlist[];
-   
+
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole;
+
   @Column({
     type: 'varchar',
     length: 100,
@@ -82,4 +94,3 @@ export class User {
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;
 }
- 

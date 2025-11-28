@@ -14,6 +14,8 @@ export class UserService {
   ) {}
 
   async update(id: number, data: any, file?: Express.Multer.File) {
+    console.log(file);
+    
     const user = await this.userRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
     
@@ -114,5 +116,9 @@ async deleteTracks(userId: number, trackIds: number[]) {
     })
     delete (result as any).password;
     return result;
+  }
+
+  getAllUsers() {
+    return this.userRepository.find();
   }
 }

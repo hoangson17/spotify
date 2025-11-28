@@ -6,6 +6,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/entities/user.entity';
 import { Track } from 'src/entities/track.entity';
 import { LikeTracksController } from './like-tracks.controller';
+import { AuthService } from '../auth/auth.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   controllers: [UserController, LikeTracksController],
@@ -13,7 +15,8 @@ import { LikeTracksController } from './like-tracks.controller';
   imports: [ConfigModule.forRoot({
     isGlobal: true
   }),
-  TypeOrmModule.forFeature([User,Track])
+  TypeOrmModule.forFeature([User,Track]),
+  AuthModule
   ],
 })
 export class UserModule {}

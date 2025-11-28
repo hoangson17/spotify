@@ -2,16 +2,11 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
   SquareTerminal,
+  Users,
+  PlayCircleIcon,
+  Music,
+  Album,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -26,75 +21,112 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import icons from "@/utils/icons"
+import { useSelector } from "react-redux"
 
 
-const auth = localStorage.getItem("persist:auth");
-const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
-// This is sample data.
 const data = {
   navMain: [
     {
       title: "Artists",
       url: "artist",
-      icon: SquareTerminal,
+      icon: Users,
       isActive: true,
       items: [
-        {
-          title: "Create artist",
-          url: "artist",
-        },
-        {
-          title: "Update artist",
-          url: "#",
-        },
-        {
-          title: "Artist details",
-          url: "#",
-        },
+        // {
+        //   title: "Create artist",
+        //   url: "artist",
+        // },
+        // {
+        //   title: "Update artist",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Artist details",
+        //   url: "#",
+        // },
       ],
     },
     {
       title: "Albums",
-      url: "#",
-      icon: Bot,
+      url: "album",
+      icon: Album,
       items: [
-        {
-          title: "Create album",
-          url: "album",
-        },
-        {
-          title: "Update album",
-          url: "#",
-        },
-        {
-          title: "Details album",
-          url: "#",
-        },
+        // {
+        //   title: "Create album",
+        //   url: "album",
+        // },
+        // {
+        //   title: "Update album",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Details album",
+        //   url: "#",
+        // },
       ],
     },
     {
       title: "Tracks",
-      url: "#",
-      icon: BookOpen,
+      url: "track",
+      icon: Music,
       items: [
-        {
-          title: "Create track",
-          url: "#",
-        },
-        {
-          title: "Update track",
-          url: "#",
-        },
-        {
-          title: "Details track",
-          url: "#",
-        }
+        // {
+        //   title: "Create track",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Update track",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Details track",
+        //   url: "#",
+        // }
+      ],
+    },
+    {
+      title: "Users",
+      url: "user",
+      icon: Users,
+      items: [
+        // {
+        //   title: "Create track",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Update track",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Details track",
+        //   url: "#",
+        // }
+      ],
+    },
+    {
+      title: "Playlists",
+      url: "playlist",
+      icon: PlayCircleIcon,
+      items: [
+        // {
+        //   title: "Create track",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Update track",
+        //   url: "#",
+        // },
+        // {
+        //   title: "Details track",
+        //   url: "#",
+        // }
       ],
     }
   ],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const user = useSelector((state: any) => state.auth.user || {});
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
