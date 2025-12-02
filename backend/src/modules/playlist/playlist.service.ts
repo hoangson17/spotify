@@ -80,7 +80,7 @@ export class PlaylistService {
 
     const playlist = await this.playlistRepository.findOne({
       where: { id, users: { id: userId } },
-      relations: ['tracks', 'user'],
+      relations: ['tracks'],
     });
     if (!playlist) throw new NotFoundException('Playlist not found');
 

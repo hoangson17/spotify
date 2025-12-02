@@ -63,8 +63,19 @@ export class TrackController {
 
   @UseGuards(RoleGuard)
   @Patch(':id')
-  update(@Param('id') id: number, @Body() data: any) {
-    return this.trackService.update(id, data);
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: 'audio', maxCount: 1 },
+        { name: 'image', maxCount: 1 },
+      ],
+      multerConfig, 
+    ),
+  )
+  update(@Param('id') id: number, @Body() data: any, @UploadedFiles()
+    files: { audio?: Express.Multer.File[]; image?: Express.Multer.File[] },
+  ) {
+    return this.trackService.update(id, data, files.image?.[0], files.audio?.[0]);
   }
 
   @UseGuards(RoleGuard)

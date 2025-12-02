@@ -139,7 +139,7 @@ const Item: React.FC<ItemProps> = ({
             isArtist ? "rounded-full" : "rounded-md",
             isLoading && "animate-pulse"
           )}
-          src={`${import.meta.env.VITE_SERVER_API}${imgSrc}`}
+          src={imgSrc?.startsWith("http") ? imgSrc : `${import.meta.env.VITE_SERVER_API}${imgSrc}`}
           alt={displayTitle || "Media item"}
           onError={handleImageError}
           loading="lazy"

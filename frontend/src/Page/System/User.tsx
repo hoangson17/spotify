@@ -43,7 +43,7 @@ const User = () => {
     <div className="p-4">
       <div className="w-full mb-3 flex justify-between">
         <h2 className="text-xl font-semibold">Danh sách Users</h2>
-        <Button>Create new user +</Button>
+        {/* <Button>Create new user +</Button> */}
       </div>
 
       <div className="rounded-xl border shadow-sm overflow-hidden">
@@ -71,7 +71,7 @@ const User = () => {
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={`${import.meta.env.VITE_SERVER_API}${user.avatar} ||`} />
+                          <AvatarImage src={getAvatar(user.avatar) || ""} />
                           <AvatarFallback>
                             {user.name?.charAt(0)?.toUpperCase() || "U"}
                           </AvatarFallback>

@@ -38,7 +38,7 @@ const Search = () => {
                 <div className="flex items-center gap-4">
                   <span className="w-6 text-gray-400 text-right">{index + 1}</span>
                   <img
-                    src={ `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
+                    src={track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
                     alt={track.title}
                     className="w-12 h-12 rounded object-cover"
                   />
@@ -71,7 +71,7 @@ const Search = () => {
               >
                 <div className="w-24 h-24 rounded-full overflow-hidden relative">
                   <img
-                    src={`${import.meta.env.VITE_SERVER_API}${artist.avatar}`}
+                    src={artist.avatar.startsWith("http") ? artist.avatar : `${import.meta.env.VITE_SERVER_API}${artist.avatar}`}
                     alt={artist.name}
                     className="w-full h-full object-cover"
                   />
@@ -99,7 +99,7 @@ const Search = () => {
               >
                 <div className="w-32 h-32 rounded overflow-hidden relative">
                   <img
-                    src={`${import.meta.env.VITE_SERVER_API}${album.cover_image}`}
+                    src={ album.cover_image.startsWith("http") ? album.cover_image : `${import.meta.env.VITE_SERVER_API}${album.cover_image}`}
                     alt={album.title}
                     className="w-full h-full object-cover"
                   />

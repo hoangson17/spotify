@@ -15,6 +15,7 @@ export const trackService = {
 
     updateTrack: (id: number, data: any) => axiosInstance.patch(`/track/${id}`, data, {
         headers: {
+          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
     }),

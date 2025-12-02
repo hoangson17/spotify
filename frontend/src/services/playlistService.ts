@@ -13,8 +13,8 @@ export const playlistService = {
         const response = await axiosInstance.post(`/playlist`, playlist);
         return response;
     },
-    updatePlaylist: async (id: number, playlist: any, config:{}) => {
-        const response = await axiosInstance.patch(`/playlist/${id}`, playlist,config);
+    updatePlaylist: async (id: number, playlist: any) => {
+        const response = await axiosInstance.patch(`/playlist/${id}`, playlist);
         return response;
     },
     deletePlaylist: async (id: number) => {
@@ -22,11 +22,12 @@ export const playlistService = {
         return response;
     },
     syncTrack: async (userId: number,id: number, trackIds: number[]) => {
-        const response = await axiosInstance.patch(`/playlist-track/sync/${userId}`,{ playlistId:id , trackIds });
+        const response = await axiosInstance.post(`/playlist-track/sync/${userId}`,{ playlistId:id , trackIds });
         return response;
     },
-
+    
     addTrack: async (userId: number,id: number, trackIds: number[]) => {
+        console.log(userId,id,trackIds);
         const response = await axiosInstance.post(`/playlist-track/add/${userId}`, { playlistId:id , trackIds });
         return response;
     },

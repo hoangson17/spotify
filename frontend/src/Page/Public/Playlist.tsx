@@ -67,7 +67,7 @@ const Playlist = () => {
         {playlistId?.id && (
           <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
             <img
-              src={`${import.meta.env.VITE_SERVER_API}${playlistId.cover_image}` || music}
+              src={ playlistId.cover_image ? (playlistId.cover_image.startsWith("http") ? playlistId.cover_image : `${import.meta.env.VITE_SERVER_API}${playlistId.cover_image}`) : music} 
               className="w-48 h-48 rounded shadow-lg object-cover"
               alt=""
             />
@@ -121,7 +121,7 @@ const Playlist = () => {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={`${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
+                        src={ track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
                         className="w-10 h-10 rounded object-cover"
                       />
                       <div>
@@ -186,7 +186,7 @@ const Playlist = () => {
 
               <div className="flex items-center gap-3">
                 <img
-                  src={`${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
+                  src={track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
                   className="w-10 h-10 rounded object-cover"
                 />
                 <div>

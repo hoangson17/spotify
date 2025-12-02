@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { ArtistsService } from './artists.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from 'src/config/multer.config';
@@ -29,7 +29,7 @@ export class ArtistsController {
     return this.artistsService.update(id, data, file);
   }
 
-  @Patch('/:id')
+  @Delete('/:id')
   delete(@Param('id') id: number) {
     return this.artistsService.delete(id);
   }

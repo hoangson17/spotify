@@ -11,7 +11,8 @@ const LikeTrack = () => {
   const { likedTracks } = useSelector((state: any) => state.likedTracks);
   const auth = localStorage.getItem("persist:auth");
   const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
-
+  console.log(user);
+  
   
   const handlePlayTrack = (track: any) => dispatch(queue([track]));
 
@@ -31,7 +32,7 @@ const LikeTrack = () => {
       {/* HEADER */}
       <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
         <img
-          src={user.avatar || none }
+          src={`${import.meta.env.VITE_SERVER_API}${user?.avatar}` || none }
           alt={user.name}
           className="w-48 h-48 rounded shadow-lg object-cover"
         />
@@ -61,7 +62,7 @@ const LikeTrack = () => {
         <span>#</span>
         <span>Title</span>
         <span>Artist</span>
-        <span>⏱</span>
+        <span>Duration</span>
       </div>
 
       {likedTracks?.map((track: any, index: number) => (
@@ -76,7 +77,7 @@ const LikeTrack = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <img src={`${import.meta.env.VITE_SERVER_API}${track.image_url}` || music} className="w-10 h-10 rounded object-cover" />
+            <img src={track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music } className="w-10 h-10 rounded object-cover" />
             <p className="font-medium">{track.title}</p>
           </div>
 

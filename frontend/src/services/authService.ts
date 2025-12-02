@@ -1,4 +1,3 @@
-import { getAllUsers, register } from "@/stores/actions/authActions";
 import axiosInstance from "../axiosConfig";
 
 export const authService = {
@@ -16,11 +15,13 @@ export const authService = {
     localStorage.removeItem("persist:auth");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
+    delete axiosInstance.defaults.headers.common["Authorization"];
   },
 
   saveTokens: (accessToken: string, refreshToken: string) => {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
   },
 
   forgotPassword(email: string) {
@@ -34,23 +35,12 @@ export const authService = {
   updateProfile(userId: number, formData: FormData) {
     return axiosInstance.patch(`/user/${userId}`, formData, {
       headers: {
-        "Content-Type": "multipart/form-data", // axios sẽ tự set boundary
+        "Content-Type": "multipart/form-data",
       },
     });
   },
 
-  getAllUsers: (token: any) => 
-  axiosInstance.get("/user/all", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }),
+  getAllUsers: () => axiosInstance.get("/user/all"),
 
-  deleteUser: (id: number, token: any) => 
-  axiosInstance.delete(`/user/${id}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }),
-
+  deleteUser: (id: number) => axiosInstance.delete(`/user/${id}`),
 };

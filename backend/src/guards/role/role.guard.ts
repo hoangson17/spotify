@@ -7,19 +7,38 @@ import { AuthService } from 'src/modules/auth/auth.service';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
-     constructor(
+  constructor(
     @InjectRedis() private readonly redis: Redis,
-    private readonly authService: AuthService) {}
+    private readonly authService: AuthService,
+  ) {}
 
-   canActivate(context: ExecutionContext): boolean {
-     const request = context.switchToHttp().getRequest();    
-     const token = request.headers.authorization?.split([' ']).slice(-1).join('');
-    console.log(token);
+  canActivate(context: ExecutionContext): boolean {
+    const request = context.switchToHttp().getRequest();
+    console.log(request);
     
-    const decode = this.authService.verifyToken(token);
+    // Lấy token
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+      throw new ForbiddenException('No token provided');
+    }
 
-    if (decode.role !== 'admin') throw new ForbiddenException('Forbidden');
+    const token = authHeader.split(' ')[1]; // Bearer <token>
+    if (!token) {
+      throw new ForbiddenException('Invalid token format');
+    }
+
+    const decode = this.authService.verifyToken(token);
+    if (!decode) {
+      throw new ForbiddenException('Invalid token');
+    }
+
+    if (decode.role !== 'admin') {
+      throw new ForbiddenException('Forbidden: Admin only');
+    }
+
+    request.user = decode;
 
     return true;
   }
 }
+

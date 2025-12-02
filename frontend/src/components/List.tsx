@@ -45,13 +45,13 @@ const List: React.FC<ListProps> = ({
   return (
     <section className="mb-10 w-full">
       <h2 className="text-2xl font-semibold mb-4">{title}</h2>
-
+      
       {items.length === 1 ? (
         <Item
           title={items[0].title || ""}
           artist={items[0].artist}
           image_url={
-            items[0].image_url || items[0].cover_image || "/placeholder.png"
+            items[0].image_url || items[0].cover_image|| imgNone 
           }
           avatar={items[0].avatar}
           name={items[0].name}
@@ -72,7 +72,7 @@ const List: React.FC<ListProps> = ({
                   title={item.title || ""}
                   artist={item.artist}
                   image_url={
-                    item.image_url || item.cover_image || imgNone
+                    item.image_url?.startsWith("http") ? item.image_url : `${import.meta.env.VITE_SERVER_API}${item.image_url}` || item.cover_image?.startsWith("http") ? item.cover_image : `${import.meta.env.VITE_SERVER_API}${item.cover_image}` || imgNone
                   }
                   audio_url={item.audio_url}
                   avatar={item.avatar || imgNone}

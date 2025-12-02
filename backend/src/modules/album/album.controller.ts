@@ -23,7 +23,7 @@ export class AlbumController {
   }
   
   @Post()
-  @UseInterceptors(FileInterceptor('avatar', multerConfig))
+  @UseInterceptors(FileInterceptor('cover_image', multerConfig))
   create(@Body() data: any, @UploadedFile() file: Express.Multer.File) {
     return this.albumService.create(data, file);
   }

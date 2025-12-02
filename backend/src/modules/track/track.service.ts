@@ -79,45 +79,57 @@ async update(
   if (!track) throw new NotFoundException('Track not found');
 
   if (image) {
-    if (!image.mimetype.startsWith('image/')) throw new Error('Invalid file type image');
-    // xóa file cũ
-    if (track.image_url) {
-      const oldPath = join(process.cwd(), track.image_url.replace('/uploads/', 'uploads/'));
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    if (!image.mimetype.startsWith('image/')) {
+      throw new Error('Invalid file type for image');
     }
-    data.image = `/uploads/images/${image.filename}`;
+
+    if (track.image_url) {
+      const oldImagePath = join(
+        process.cwd(),
+        track.image_url.replace('/uploads/', 'uploads/')
+      );
+      if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
+    }
+
+    data.image_url = `/uploads/images/${image.filename}`;
   }
 
   if (audio) {
-    if (!audio.mimetype.startsWith('audio/')) throw new Error('Invalid file type audio');
-    // xóa file cũ
-    if (track.audio_url) {
-      const oldPath = join(process.cwd(), track.audio_url.replace('/uploads/', 'uploads/'));
-      if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+    if (!audio.mimetype.startsWith('audio/')) {
+      throw new Error('Invalid file type for audio');
     }
-    data.audio = `/uploads/audio/${audio.filename}`;
 
-    // lấy duration mới
+    if (track.audio_url) {
+      const oldAudioPath = join(
+        process.cwd(),
+        track.audio_url.replace('/uploads/', 'uploads/')
+      );
+      if (fs.existsSync(oldAudioPath)) fs.unlinkSync(oldAudioPath);
+    }
+
+    data.audio_url = `/uploads/audio/${audio.filename}`;
+
     const audioPath = join(process.cwd(), 'uploads', 'audio', audio.filename);
+
     const duration = await new Promise<number>((resolve, reject) => {
       mp3Duration(audioPath, (err, duration) => {
         if (err) reject(err);
         else resolve(duration);
       });
     });
+
     data.duration = duration;
   }
 
+
   const updatedTrack = {
-    ...track,
-    ...data,
-    image_url: data.image,
-    audio_url: data.audio,
-    duration: data.duration,
+    ...track, 
+    ...data, 
   };
 
   return await this.trackRepository.save(updatedTrack);
 }
+
 
   async delete(id: number) {
     const track = await this.findOne(id);

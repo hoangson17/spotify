@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -6,19 +6,27 @@ import { Label } from "@/components/ui/label";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
+import actionTypes from "@/stores/actions/actionTypes";
 
 const Profile = () => {
   const dispatch = useDispatch();
+
   const [preview, setPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  
+
   const user = useSelector((state: any) => state.auth.user);
+
   useEffect(() => {
-    if (user && user.avatar) {
-      setPreview(user.avatar);
+    if (user) {
+      setName(user.name || "");
+      setPreview(
+        user.avatar?.startsWith("http")
+          ? user.avatar
+          : `${import.meta.env.VITE_SERVER_API}${user.avatar}`
+      );
     }
   }, [user]);
 
@@ -34,22 +42,32 @@ const Profile = () => {
     if (!user) return;
 
     const formData = new FormData();
-    formData.append("name", name || user.name);
+    formData.append("name", name);
 
-    if (password) {
-      formData.append("password", password);
-    }
-
-    if (avatarFile) {
-      formData.append("avatar", avatarFile); // ✔ file thật
-    }
+    if (password) formData.append("password", password);
+    if (avatarFile) formData.append("avatar", avatarFile);
 
     try {
       const res = await authService.updateProfile(user.id, formData);
-      toast.success(res.data.message);
+
+      toast.success("Cập nhật thành công!");
+
+      dispatch({
+        type: actionTypes.UPDATE_USER_SUCCESS,
+        payload: res.data.user, 
+      });
+
     } catch (err: any) {
-      toast.error(err.response.data.message);
+      toast.error(err.response?.data?.message || "Có lỗi xảy ra");
     }
+  };
+
+  const getAvatar = () => {
+    if (!preview) return "/default-avatar.png";
+    if (preview.startsWith("blob:")) return preview;
+    return preview.startsWith("http")
+      ? preview
+      : `${import.meta.env.VITE_SERVER_API}${preview}`;
   };
 
   return (
@@ -59,11 +77,10 @@ const Profile = () => {
           Thông tin cá nhân
         </h2>
 
-        {/* Avatar */}
         <div className="flex items-center gap-6 mb-8">
           <div className="relative group">
             <Avatar className="w-24 h-24 border shadow-md transition-transform group-hover:scale-105">
-              <AvatarImage src={preview || "/default-avatar.png"} />
+              <AvatarImage src={getAvatar()} />
               <AvatarFallback>AV</AvatarFallback>
             </Avatar>
 
@@ -83,7 +100,7 @@ const Profile = () => {
             />
           </div>
 
-          <div className="text-gray-600">
+          <div className="text-gray-400">
             <p className="text-sm">Ảnh đại diện</p>
             <p className="text-xs opacity-70">Chọn ảnh JPG, PNG (tối đa 3MB)</p>
           </div>
@@ -92,28 +109,30 @@ const Profile = () => {
         {/* Form */}
         <div className="space-y-5">
           <div className="space-y-2">
-            <Label className="text-gray-700 font-medium">Họ và tên</Label>
+            <Label className="text-gray-300 font-medium">Họ và tên</Label>
             <Input
+              value={name}
               placeholder="Nhập họ tên"
-              className="h-11 border-gray-300 focus:ring-2 focus:ring-black"
+              className="h-11 border-gray-700 bg-neutral-900 text-white"
               onChange={(e) => setName(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-gray-700 font-medium">Email</Label>
+            <Label className="text-gray-300 font-medium">Email</Label>
             <Input
               disabled
-              defaultValue={user.email}
-              className="h-11 bg-gray-100 border-gray-200 text-gray-500"
+              value={user?.email || ""}
+              className="h-11 bg-gray-900 border-gray-800 text-gray-500"
             />
           </div>
 
           <div className="space-y-2">
-            <Label className="text-gray-700 font-medium">Password</Label>
+            <Label className="text-gray-300 font-medium">Password</Label>
             <Input
               placeholder="Nhập mật khẩu mới"
-              className="h-11 border-gray-300 focus:ring-2 focus:ring-black"
+              type="password"
+              className="h-11 border-gray-700 bg-neutral-900 text-white"
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
