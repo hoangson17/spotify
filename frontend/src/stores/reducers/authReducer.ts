@@ -3,6 +3,7 @@ import actionTypes from "../actions/actionTypes";
 const initialState = {
   user: null,
   allUser: [] as any[],
+  lockUser: [] as any[],
   accessToken: null,
   refreshToken: null,
   loading: false,
@@ -48,6 +49,15 @@ const authReducer = (state = initialState, action: any) => {
         isAuthenticated: false,
       };
 
+    case actionTypes.UPDATE_USER_REQUEST:
+      return { ...state, loading: true, error: null };
+
+    case actionTypes.UPDATE_USER_SUCCESS:
+      return { ...state, loading: false, user: action.payload };
+
+    case actionTypes.UPDATE_USER_FAILURE:
+      return { ...state, loading: false, error: action.payload };
+
     case actionTypes.SET_PROFILE:
       return { ...state, user: action.payload };
 
@@ -61,6 +71,13 @@ const authReducer = (state = initialState, action: any) => {
 
     case actionTypes.GET_ALL_USERS_FAILURE:
       return { ...state, loading: false, error: action.payload };
+
+    case actionTypes.GET_LOCKED_USERS_REQUEST:  
+      return { ...state, loading: true, error: null };
+    case actionTypes.GET_LOCKED_USERS_SUCCESS:
+      return { ...state, loading: false, lockUser: action.payload };
+    case actionTypes.GET_LOCKED_USERS_FAILURE:
+      return { ...state, loading: false, error: action.payload }; 
 
     default:
       return state;

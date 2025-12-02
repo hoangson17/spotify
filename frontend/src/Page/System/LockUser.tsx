@@ -1,92 +1,60 @@
-import { getAllUsers } from "@/stores/actions/authActions";
+import { getLockedUsers } from "@/stores/actions/authActions";
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 
-import { useState } from "react";
-
-const User = () => {
+const LockUser = () => {
   const dispatch = useDispatch();
-  const users = useSelector((state: any) => state.auth.allUser || []);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [role, setRole] = useState("user");
+  const users = useSelector((state: any) => state.auth.lockUser || []);
 
   useEffect(() => {
-    dispatch(getAllUsers() as any);
+    dispatch(getLockedUsers() as any);
   }, [dispatch]);
 
-  console.log(users);
+  const formatDate = (dateStr: string) =>
+    dateStr ? new Date(dateStr).toLocaleDateString("vi-VN") : "";
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("vi-VN");
-  };
+  const getAvatar = (avatar: string | null) =>
+    avatar
+      ? avatar.startsWith("http")
+        ? avatar
+        : `${import.meta.env.VITE_SERVER_API}${avatar}`
+      : null;
 
-  const handleOpenUpdate = (user: any) => {
-    setSelectedUser(user);
-    setRole(user.role);
-    setOpenDialog(true);
-  };
-
-  const getAvatar = (avatar: string | null) => {
-    if (!avatar) return null;
-    if (avatar.startsWith("http")) return avatar;
-    return `${import.meta.env.VITE_SERVER_API}${avatar}`;
+  const handleRestore = async (user: any) => {
+    try {
+      await authService.restoreUser(user.id);
+      dispatch(getLockedUsers() as any);
+      toast.success("Khôi phục user thành công");
+    } catch {
+      toast.error("Khôi phục user thất bại");
+    }
   };
 
   const handleDeleteUser = async (id: number) => {
     try {
-      await authService.deleteUser(id);
-      dispatch(getAllUsers() as any);
+      await authService.hardDeleteUser(id);
+      dispatch(getLockedUsers() as any);
       toast.success("Xóa user thành công");
-    } catch (err) {
+    } catch {
       toast.error("Xóa user thất bại");
-    }
-  };
-
-  const handleUpdateRole = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("role", role);
-
-      await authService.updateProfile(selectedUser.id, formData);
-
-      toast.success("Cập nhật quyền thành công!");
-      setOpenDialog(false);
-      dispatch(getAllUsers() as any);
-    } catch (err) {
-      toast.error("Cập nhật quyền thất bại");
     }
   };
 
   return (
     <div className="p-4">
       <div className="w-full mb-3 flex justify-between">
-        <h2 className="text-xl font-semibold">Danh sách Users</h2>
-        <Link to={"/admin/lock-user"}>
-          <Button>Tài khoản đã khóa</Button>
+        <h2 className="text-xl font-semibold">Tài khoản đã khóa</h2>
+        <Link to={"/admin/user"}>
+          <Button>Quay lại danh sách</Button>
         </Link>
       </div>
 
@@ -106,12 +74,11 @@ const User = () => {
             </TableHeader>
 
             <TableBody>
-              {users.length > 0 ? (
+              {users.length ? (
                 users.map((user: any) => (
-                  <TableRow key={user.id} className="hover:bg-muted/20">
+                  <TableRow key={user.id}>
                     <TableCell>{user.id}</TableCell>
 
-                    {/* User info */}
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
@@ -120,7 +87,6 @@ const User = () => {
                             {user.name?.charAt(0)?.toUpperCase() || "U"}
                           </AvatarFallback>
                         </Avatar>
-
                         <span className="font-medium">{user.name}</span>
                       </div>
                     </TableCell>
@@ -147,9 +113,9 @@ const User = () => {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleOpenUpdate(user)}
+                          onClick={() => handleRestore(user)}
                         >
-                          Update
+                          Khôi phục
                         </Button>
 
                         <Button
@@ -157,7 +123,7 @@ const User = () => {
                           size="sm"
                           onClick={() => handleDeleteUser(user.id)}
                         >
-                          Delete
+                          Xóa vĩnh viễn
                         </Button>
                       </div>
                     </TableCell>
@@ -166,7 +132,7 @@ const User = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center h-24">
-                    No users found.
+                    Không có tài khoản bị khóa.
                   </TableCell>
                 </TableRow>
               )}
@@ -174,46 +140,8 @@ const User = () => {
           </Table>
         </div>
       </div>
-      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Cập nhật quyền User</DialogTitle>
-          </DialogHeader>
-
-          {selectedUser && (
-            <div className="space-y-4 mt-2">
-              <div>
-                <p className="text-sm text-gray-500">Tên user</p>
-                <p className="font-medium">{selectedUser.name}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500 mb-1 block">
-                  Quyền
-                </label>
-
-                <select
-                  className="w-full border rounded-md px-3 py-2"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setOpenDialog(false)}>
-              Hủy
-            </Button>
-
-            <Button onClick={handleUpdateRole}>Lưu thay đổi</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
-export default User;
+export default LockUser;

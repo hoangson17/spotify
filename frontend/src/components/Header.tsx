@@ -195,8 +195,8 @@ const Header: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <img
                   className="w-10 h-10 rounded-full object-cover cursor-pointer ring-2 ring-blue-500 hover:ring-blue-400 transition"
-                  src={
-                    auth.user.avatar.includes("/uploads/")
+                  src={ auth.user?.avatar &&
+                    auth?.user?.avatar.includes("/uploads/")
                       ? `${import.meta.env.VITE_SERVER_API}${auth.user.avatar}`
                       : auth.user.avatar || noneAvatar
                   }
@@ -206,22 +206,23 @@ const Header: React.FC = () => {
 
               <DropdownMenuContent className="bg-[#2c2c2c] text-white rounded-lg shadow-lg w-55 p-2 flex flex-col gap-1 mt-3 z-50">
                 <DropdownMenuSeparator className="border-gray-600" />
-                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
+                {/* <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
                   <FileUser className="text-lg" /> Account
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
 
+                <Link to="/profile">
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
-                  <Link to="/profile" className="flex items-center gap-2">
+                  <div className="flex items-center gap-2">
                       <Settings className="text-lg" /> Profile
-                    </Link>
+                    </div>
                 </DropdownMenuItem>
-
+                </Link>
                 {role === "admin" && (
+                <Link to="/admin">
                   <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
-                    <Link to="/admin" className="flex items-center gap-2">
-                      <Settings className="text-lg" /> Manager
-                    </Link>
+                    <GrGroup className="text-lg" /> Admin Dashboard
                   </DropdownMenuItem>
+                </Link>
                 )}
 
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">

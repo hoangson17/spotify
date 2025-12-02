@@ -78,8 +78,7 @@ export const setProfile = (data: any) => ({
 export const getAllUsers = () => async (dispatch: any) => {
   dispatch({ type: actionTypes.GET_ALL_USERS_REQUEST });
   try {
-    const token = localStorage.getItem("accessToken"); 
-    const res = await authService.getAllUsers(token); 
+    const res = await authService.getAllUsers(); 
     dispatch({ type: actionTypes.GET_ALL_USERS_SUCCESS, payload: res.data });
   } catch (err: any) {
     dispatch({
@@ -88,4 +87,17 @@ export const getAllUsers = () => async (dispatch: any) => {
     });
   }
 };
+export const getLockedUsers = () => async (dispatch: any) => {  
+  dispatch({ type: actionTypes.GET_LOCKED_USERS_REQUEST });
+  try {
+    const res = await authService.getUserLock(); 
+    dispatch({ type: actionTypes.GET_LOCKED_USERS_SUCCESS, payload: res.data });
+  } catch (err: any) {
+    dispatch({
+      type: actionTypes.GET_LOCKED_USERS_FAILURE,
+      payload: err.response?.data?.message || "Failed to fetch users",
+    });
+  }
+};
+
 

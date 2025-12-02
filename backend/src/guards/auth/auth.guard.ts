@@ -28,6 +28,13 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException("Unauthrized");
     }
     const user = await this.authService.profile(decode.userId);
+    
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+    if (user.deletedAt) {
+      throw new UnauthorizedException("Tài khoản đã bị khóa");
+    }
     request.user = user;
     request.user.jti = jti;
     request.user.exp = decode.exp;

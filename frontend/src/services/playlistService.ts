@@ -10,11 +10,21 @@ export const playlistService = {
         return response;
     },
     createPlaylist: async (playlist: any) => {
-        const response = await axiosInstance.post(`/playlist`, playlist);
+        const response = await axiosInstance.post(`/playlist`, playlist,{
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Accept': 'application/json'
+            },
+        });
         return response;
     },
     updatePlaylist: async (id: number, playlist: any) => {
-        const response = await axiosInstance.patch(`/playlist/${id}`, playlist);
+        const response = await axiosInstance.patch(`/playlist/${id}`, playlist,{
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Accept': 'application/json'
+            },
+        });
         return response;
     },
     deletePlaylist: async (id: number) => {

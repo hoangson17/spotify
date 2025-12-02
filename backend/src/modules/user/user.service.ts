@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { join } from 'path';
 import { Track } from 'src/entities/track.entity';
 import { User } from 'src/entities/user.entity';
-import { In, Not, Repository } from 'typeorm';
+import { In, IsNull, Not, Repository } from 'typeorm';
 import * as fs from 'fs';
 
 @Injectable()
@@ -38,6 +38,13 @@ export class UserService {
     }
     await this.userRepository.update(id, data);
     return { ...user, ...data };
+  }
+
+    async deleteUser(id: number) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) return false;
+    await this.userRepository.softDelete(id);
+    return true;
   }
 
   async syncTrack(userId: number, trackIds: number[]) {
@@ -120,5 +127,20 @@ async deleteTracks(userId: number, trackIds: number[]) {
 
   getAllUsers() {
     return this.userRepository.find();
+  }
+
+  getUserLock() {
+  return this.userRepository.find({
+    withDeleted: true,
+    where: { deletedAt: Not(IsNull()) }
+  });
+  }
+
+  async restore(id: number){
+    await this.userRepository.restore(id);
+  }
+
+  async hardDelete(id: number){
+    await this.userRepository.delete(id);
   }
 }

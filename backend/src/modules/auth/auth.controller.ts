@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, Req, Request, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, Request, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import type { Response } from 'express';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
@@ -79,5 +79,7 @@ export class AuthController {
   async resetPassword(@Body() body: any) {
     return this.authService.resetPassword(body);
   }
+
+
 
 }

@@ -7,6 +7,7 @@ import { authService } from "@/services/authService";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import actionTypes from "@/stores/actions/actionTypes";
+import { setProfile } from "@/stores/actions/authActions";
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -52,10 +53,7 @@ const Profile = () => {
 
       toast.success("Cập nhật thành công!");
 
-      dispatch({
-        type: actionTypes.UPDATE_USER_SUCCESS,
-        payload: res.data.user, 
-      });
+      dispatch(setProfile(res.data) as any);
 
     } catch (err: any) {
       toast.error(err.response?.data?.message || "Có lỗi xảy ra");

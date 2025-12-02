@@ -106,7 +106,7 @@ export class AuthService {
   }
 
   async profile(id: number) {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({ where: { id },withDeleted: true, });
     if (!user) {
       return false;
     }
@@ -446,6 +446,8 @@ async resetPassword(body: { email: string; otp: string; newPassword: string }) {
     message: 'Đặt lại mật khẩu thành công.',
   };
 }
+
+
 
 
 }

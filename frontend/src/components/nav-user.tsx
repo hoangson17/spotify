@@ -5,6 +5,7 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
+  HomeIcon
 } from "lucide-react"
 
 import {
@@ -29,7 +30,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useDispatch } from "react-redux"
 import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 export function NavUser({
   user,
@@ -108,10 +109,9 @@ export function NavUser({
                 <CreditCard />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
+              <Link to="/">
+                <DropdownMenuItem><HomeIcon /> Home</DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout}>

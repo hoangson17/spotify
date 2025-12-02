@@ -21,7 +21,9 @@ export const authService = {
   saveTokens: (accessToken: string, refreshToken: string) => {
     localStorage.setItem("accessToken", accessToken);
     localStorage.setItem("refreshToken", refreshToken);
-    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+    axiosInstance.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${accessToken}`;
   },
 
   forgotPassword(email: string) {
@@ -40,7 +42,45 @@ export const authService = {
     });
   },
 
-  getAllUsers: () => axiosInstance.get("/user/all"),
+  getAllUsers: () =>
+    axiosInstance.get("/user/all", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }),
 
-  deleteUser: (id: number) => axiosInstance.delete(`/user/${id}`),
+  deleteUser: (id: number) =>
+    axiosInstance.delete(`/user/${id}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }),
+
+  restoreUser: (id: number) =>
+    axiosInstance.patch(
+      `/user/restore/${id}`,
+      {}, // body rỗng
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    ),
+
+  getUserLock: () =>
+    axiosInstance.get("/user/lock", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }),
+
+  hardDeleteUser: (id: number) =>
+    axiosInstance.delete(`/user/hard-delete/${id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    }),
 };
