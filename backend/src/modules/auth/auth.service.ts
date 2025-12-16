@@ -198,7 +198,7 @@ export class AuthService {
         role: user.role,
       },
       {
-        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRED,
+        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRED as unknown as number,
         secret: process.env.JWT_REFRESH_TOKEN_SECRET,
       },
     );
@@ -300,7 +300,7 @@ export class AuthService {
         role: user.role,
       },
       {
-        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRED,
+        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRED as unknown as number,
         secret: process.env.JWT_REFRESH_TOKEN_SECRET,
       },
     );

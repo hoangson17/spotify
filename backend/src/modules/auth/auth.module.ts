@@ -21,7 +21,7 @@ import { EmailConsumer } from 'src/consumer/email.consumer';
     JwtModule.register  ({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_TOKEN_EXPIRED },
+      signOptions: { expiresIn: Number(process.env.JWT_TOKEN_EXPIRED) },
     }),
     BullModule.registerQueue({
       name: 'mailRegister',
