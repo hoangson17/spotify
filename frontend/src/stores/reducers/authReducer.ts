@@ -41,6 +41,7 @@ const authReducer = (state = initialState, action: any) => {
 
     case actionTypes.LOGOUT:
       return {
+        ...state,
         user: null,
         accessToken: null,
         refreshToken: null,
@@ -48,6 +49,7 @@ const authReducer = (state = initialState, action: any) => {
         error: null,
         isAuthenticated: false,
       };
+
 
     case actionTypes.UPDATE_USER_REQUEST:
       return { ...state, loading: true, error: null };

@@ -19,6 +19,7 @@ import { FaGrinStars } from "react-icons/fa";
 import actionTypes from "@/stores/actions/actionTypes";
 import { getDataSearch } from "@/stores/actions/searchActions";
 import { jwtDecode } from "jwt-decode";
+import { logout } from "@/stores/actions/authActions";
 
 const {
   FaSpotify,
@@ -92,9 +93,7 @@ const Header: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    dispatch({
-      type: actionTypes.LOGOUT,
-    });
+    dispatch(logout() as any); 
   };
 
   return (

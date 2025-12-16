@@ -106,7 +106,10 @@ export class AuthService {
   }
 
   async profile(id: number) {
-    const user = await this.userRepository.findOne({ where: { id },withDeleted: true, });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
     if (!user) {
       return false;
     }
@@ -142,6 +145,8 @@ export class AuthService {
       const token = this.jwtService.sign({
         userId: decode.userId,
         email: decode.email,
+        role: decode.role,
+        jti: uuid(),
       });
       const jtiRefreshToken = decode.jti;
       const accessToken = await this.redis.get(
@@ -402,52 +407,58 @@ export class AuthService {
     };
   }
 
-async resetPassword(body: { email: string; otp: string; newPassword: string }) {
-  const { email, otp, newPassword } = body;
+  async resetPassword(body: {
+    email: string;
+    otp: string;
+    newPassword: string;
+  }) {
+    const { email, otp, newPassword } = body;
 
-  // 1. Kiểm tra user tồn tại
-  const user = await this.userRepository.findOne({ where: { email } });
-  if (!user) {
+    // 1. Kiểm tra user tồn tại
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      return {
+        success: false,
+        message: 'Người dùng không tồn tại.',
+      };
+    }
+
+    // 2. Lấy OTP trong Redis
+    const savedOtp = await this.redis.get(`forgot-password:${email}`);
+    if (!savedOtp) {
+      return {
+        success: false,
+        message: 'OTP hết hạn hoặc không tồn tại.',
+      };
+    }
+
+    // 3. So sánh OTP
+    if (savedOtp !== otp) {
+      return {
+        success: false,
+        message: 'OTP không đúng.',
+      };
+    }
+
+    // 4. Mã hóa mật khẩu mới
+    const hashedPassword = await Hash.make(newPassword);
+
+    // 5. Lưu mật khẩu mới
+    user.password = hashedPassword;
+    await this.userRepository.save(user);
+
+    // 6. Xóa OTP để tránh dùng lại
+    await this.redis.del(`forgot-password:${email}`);
+
     return {
-      success: false,
-      message: 'Người dùng không tồn tại.',
+      success: true,
+      message: 'Đặt lại mật khẩu thành công.',
     };
   }
 
-  // 2. Lấy OTP trong Redis
-  const savedOtp = await this.redis.get(`forgot-password:${email}`);
-  if (!savedOtp) {
-    return {
-      success: false,
-      message: 'OTP hết hạn hoặc không tồn tại.',
-    };
+  async loguot(jti: string, exp: number) {
+    const diff = exp - Date.now() / 1000;
+    await this.redis.set(`blacklist_${jti}`, jti, 'EX', Math.round(diff));
+    return { sucess: true };
   }
-
-  // 3. So sánh OTP
-  if (savedOtp !== otp) {
-    return {
-      success: false,
-      message: 'OTP không đúng.',
-    };
-  }
-
-  // 4. Mã hóa mật khẩu mới
-  const hashedPassword = await Hash.make(newPassword);
-
-  // 5. Lưu mật khẩu mới
-  user.password = hashedPassword;
-  await this.userRepository.save(user);
-
-  // 6. Xóa OTP để tránh dùng lại
-  await this.redis.del(`forgot-password:${email}`);
-
-  return {
-    success: true,
-    message: 'Đặt lại mật khẩu thành công.',
-  };
-}
-
-
-
-
 }

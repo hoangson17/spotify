@@ -12,6 +12,12 @@ export const authService = {
   register: (body: any) => axiosInstance.post("/auth/register", body),
 
   logout: () => {
+    axiosInstance.post("/auth/logout", {}, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
+    });
     localStorage.removeItem("persist:auth");
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");

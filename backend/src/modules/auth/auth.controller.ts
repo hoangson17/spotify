@@ -1,12 +1,25 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, Request, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Request,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import type { Response } from 'express';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {
-  }
+  constructor(private readonly authService: AuthService) {}
 
   @Get('google/redirect')
   google(@Res() res: Response) {
@@ -22,10 +35,12 @@ export class AuthController {
       throw new Error("Can't get token");
     }
     const accessToken = (tokenData as { access_token: string }).access_token;
-    return res.redirect(process.env.GOOGLE_FRONTEND_URL + `?accessToken=${accessToken}`);
+    return res.redirect(
+      process.env.GOOGLE_FRONTEND_URL + `?accessToken=${accessToken}`,
+    );
   }
 
-   @Post('google/callback')
+  @Post('google/callback')
   async googleCallbackPost(@Body() { accessToken }: { accessToken: string }) {
     return this.authService.googleLogin(accessToken);
   }
@@ -59,12 +74,12 @@ export class AuthController {
   @Post('/refresh-token')
   async refeshToken(@Body() body: any) {
     const result = await this.authService.refreshToken(body);
-    if(!result){
+    if (!result) {
       throw new UnauthorizedException('Refresh token khong hop le');
     }
     return result;
   }
- 
+
   @Post('/test')
   tes() {
     return this.authService.testMail();
@@ -80,6 +95,28 @@ export class AuthController {
     return this.authService.resetPassword(body);
   }
 
+  @UseGuards(AuthGuard)
+  @Post('/logout')
+  logout(@Request() req: any) {
+    const { user } = req;    
+    const jti = user.jti;
+    const exp = user.exp;
+    return this.authService.logout(jti, exp);
+  }
 
-
+  @UseGuards(AuthGuard)
+  @Patch('/profile')
+  async updateUser(@Request() req: any, @Body() body: any) {
+    const data = await this.authService.updateUser(req.user, body);
+    if (!data) {
+      return {
+        success: false,
+        message: 'Email da ton tai',
+      };
+    }
+    return {
+      success: true,
+      data: data,
+    };
+  }
 }
