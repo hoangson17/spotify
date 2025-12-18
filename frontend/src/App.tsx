@@ -23,6 +23,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Auth from "./Page/Public/Auth";
 import Profile from "./Page/Public/Profile";
 import LockUser from "./Page/System/LockUser";
+import AdminMiddlewares from "./Middleware/AdminMiddlewares";
 
 function App() {
   return (
@@ -44,15 +45,17 @@ function App() {
           <Route path="/register" element={<Auth type="register" />} />
           <Route path="/auth/google/callback" element={<Google />} />
           <Route path="/admin" element={<AuthMiddlewares />}>
-            <Route element={<Admin />}>
-              <Route index element={<AddTrack />} />
-              <Route path="artist" element={<AddArtist />} />
-              <Route path="album" element={<AddAlbum />} />
-              <Route path="track" element={<AddTrack />} />
-              <Route path="user" element={<User />} />
-              <Route path="playlist" element={<AddPlayList />} />
-              <Route path="lock-user" element={<LockUser />} />
-              <Route path="profile" element={<AdminProfile />} />
+            <Route path="/admin" element={<AdminMiddlewares />}>
+              <Route element={<Admin />}>
+                <Route index element={<AddTrack />} />
+                <Route path="artist" element={<AddArtist />} />
+                <Route path="album" element={<AddAlbum />} />
+                <Route path="track" element={<AddTrack />} />
+                <Route path="user" element={<User />} />
+                <Route path="playlist" element={<AddPlayList />} />
+                <Route path="lock-user" element={<LockUser />} />
+                <Route path="profile" element={<AdminProfile />} />
+              </Route>
             </Route>
           </Route>
         </Routes>
