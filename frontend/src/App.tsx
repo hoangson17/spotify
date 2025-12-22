@@ -45,7 +45,7 @@ function App() {
           <Route path="/register" element={<Auth type="register" />} />
           <Route path="/auth/google/callback" element={<Google />} />
           <Route path="/admin" element={<AuthMiddlewares />}>
-            <Route path="/admin" element={<AdminMiddlewares />}>
+            <Route element={<AdminMiddlewares />}>
               <Route element={<Admin />}>
                 <Route index element={<AddTrack />} />
                 <Route path="artist" element={<AddArtist />} />
