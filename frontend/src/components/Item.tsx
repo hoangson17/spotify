@@ -1,12 +1,14 @@
-import React from "react";
+import { queue,setCurrentSong } from "@/stores/actions/playerActions";
 import clsx from "clsx";
-import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { queue, setCurrentSong } from "@/stores/actions/playerActions";
 import { Play } from "lucide-react";
+import React from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import none from "../assets/none.png";
+import { mediaUrl } from "@/utils/media";
 
 interface Track {
-  id: number | string;
+  id: string;
   title: string;
   artist: string;
   image_url: string;
@@ -15,7 +17,7 @@ interface Track {
 }
 
 interface ItemProps {
-  id?: number | string;
+  id?: string;
   title?: string;
   artist?: string;
   image_url?: string;
@@ -48,11 +50,11 @@ const Item: React.FC<ItemProps> = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [imgError, setImgError] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isLoading] = React.useState(false);
 
   const displayTitle = isArtist ? name : title;
   const imgSrc = imgError 
-    ? "/default-image.png" 
+    ? none
     : (isArtist ? avatar : image_url);
 
   const handleImageError = () => {
@@ -62,8 +64,8 @@ const Item: React.FC<ItemProps> = ({
   const user = useSelector((state: any) => state.auth.user);
 
   const handlePlay = (e: React.MouseEvent) => {
-    if(!user) return;
     e.stopPropagation();
+    if (!user) return;
 
     let tracks: Track[] = [];
     let trackToPlay: Track | null = null;
@@ -87,8 +89,8 @@ const Item: React.FC<ItemProps> = ({
 
     if (tracks.length > 0) {
       trackToPlay = tracks[0];
-        dispatch(queue(playlistTracks));
-        dispatch(setCurrentSong(trackToPlay));
+      dispatch(queue(tracks));
+      dispatch(setCurrentSong(trackToPlay));
     }
   };
 
@@ -116,8 +118,6 @@ const Item: React.FC<ItemProps> = ({
 
   
 
-  const showPlayButton = playlistTracks?.length || albumTracks?.length || audio_url;
-  
   return (
     <div
       onClick={handleClick}
@@ -139,28 +139,29 @@ const Item: React.FC<ItemProps> = ({
             isArtist ? "rounded-full" : "rounded-md",
             isLoading && "animate-pulse"
           )}
-          src={imgSrc?.startsWith("http") ? imgSrc : `${import.meta.env.VITE_SERVER_API}${imgSrc}`}
+          src={mediaUrl(imgSrc, none)}
           alt={displayTitle || "Media item"}
           onError={handleImageError}
           loading="lazy"
         />
 
-        {showPlayButton &&  (
-          <button
-            onClick={handlePlay}
-            className={clsx(
-              "absolute right-2 bottom-2 p-3 rounded-full bg-green-500 text-black",
-              "shadow-xl shadow-green-900/40 hover:bg-green-400 hover:scale-105",
-              "translate-y-3 opacity-0 scale-90",
-              "group-hover:translate-y-0 group-hover:opacity-100 group-hover:scale-100",
-              "transition-all duration-300 cursor-pointer",
-              "focus:translate-y-0 focus:opacity-100 focus:scale-100 focus:outline-none"
-            )}
-            aria-label={`Play ${displayTitle}`}
-          >
-            <Play size={18} fill="currentColor" />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handlePlay}
+          className={clsx(
+            "absolute right-3 bottom-3 z-10 flex h-12 w-12 items-center justify-center",
+            "rounded-full bg-green-500 text-black shadow-xl shadow-black/40",
+            "translate-y-3 scale-90 opacity-0",
+            "transition-all duration-200 ease-out",
+            "group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100",
+            "hover:scale-105 hover:bg-green-400",
+            "focus-visible:translate-y-0 focus-visible:scale-100 focus-visible:opacity-100",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          )}
+          aria-label={`Phát ${displayTitle}`}
+        >
+          <Play className="ml-0.5 cursor-pointer" size={21} fill="currentColor" />
+        </button>
       </div>
 
       <div className="overflow-hidden min-h-[40px]">

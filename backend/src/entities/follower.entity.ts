@@ -11,20 +11,20 @@ import { Artist } from './artist.entity';
  
 @Entity('followers')
 export class Follower {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   // Người theo dõi (luôn là user)
   @ManyToOne(() => User, (user) => user.following, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'follower_id' })
-  follower: User;
+  follower!: User;
 
   // Người bị theo dõi (user hoặc artist)
-  @Column({ type: 'int', nullable: false })
-  following_id: number;
+  @Column({ type: 'varchar', length: 36, nullable: false })
+  following_id!: string;
 
   @Column({ type: 'varchar', length: 20, nullable: false })
-  following_type: 'user' | 'artist';
+  following_type!: 'user' | 'artist';
 
   // Nếu following là Artist, có thể join để query
   @ManyToOne(() => Artist, { nullable: true })
@@ -32,6 +32,6 @@ export class Follower {
   artist?: Artist;
 
   @CreateDateColumn({ type: 'timestamp' })
-  created_at: Date;
+  created_at!: Date;
 }
  

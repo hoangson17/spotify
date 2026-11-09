@@ -1,36 +1,21 @@
 import axiosInstance from "../axiosConfig";
+import { saveTokens } from "./authTokens";
+import type { PaginationParams } from "@/types/pagination";
 
 export const authService = {
   login: (email: string, password: string) =>
     axiosInstance.post("/auth/login", { email, password }),
 
-  loginWithGoogle: (accessTokenFromGoogle: string) =>
+  loginWithGoogle: (code: string) =>
     axiosInstance.post("/auth/google/callback", {
-      accessToken: accessTokenFromGoogle,
+      code,
     }),
 
   register: (body: any) => axiosInstance.post("/auth/register", body),
 
-  logout: () => {
-    axiosInstance.post("/auth/logout", {}, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-      },
-    });
-    localStorage.removeItem("persist:auth");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    delete axiosInstance.defaults.headers.common["Authorization"];
-  },
+  logout: () => axiosInstance.post("/auth/logout"),
 
-  saveTokens: (accessToken: string, refreshToken: string) => {
-    localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
-    axiosInstance.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${accessToken}`;
-  },
+  saveTokens,
 
   forgotPassword(email: string) {
     return axiosInstance.post("/auth/forgot-password", { email });
@@ -40,7 +25,7 @@ export const authService = {
     return axiosInstance.post("/auth/reset-password", data);
   },
 
-  updateProfile(userId: number, formData: FormData) {
+  updateProfile(userId: string, formData: FormData) {
     return axiosInstance.patch(`/user/${userId}`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -48,45 +33,40 @@ export const authService = {
     });
   },
 
-  getAllUsers: () =>
+  getAllUsers: (params: PaginationParams = {}) =>
     axiosInstance.get("/user/all", {
+      params,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     }),
 
-  deleteUser: (id: number) =>
+  deleteUser: (id: string) =>
     axiosInstance.delete(`/user/${id}`, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     }),
 
-  restoreUser: (id: number) =>
+  restoreUser: (id: string) =>
     axiosInstance.patch(
       `/user/restore/${id}`,
       {}, // body rỗng
       {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
+        headers: {},
       }
     ),
 
-  getUserLock: () =>
+  getUserLock: (params: PaginationParams = {}) =>
     axiosInstance.get("/user/lock", {
+      params,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     }),
 
-  hardDeleteUser: (id: number) =>
+  hardDeleteUser: (id: string) =>
     axiosInstance.delete(`/user/hard-delete/${id}`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-      },
+      headers: {},
     }),
 };

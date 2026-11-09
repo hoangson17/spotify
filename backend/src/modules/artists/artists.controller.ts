@@ -1,41 +1,73 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
-import { ArtistsService } from './artists.service';
+import { RequirePermissions } from 'src/utils/permissions';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/config/multer.config';
+import { imageMulterConfig } from 'src/config/multer.config';
+import { RoleGuard } from 'src/guards/role/role.guard';
+import { ArtistsService } from './artists.service';
+import { paginationOptions } from 'src/utils/pagination';
+import { CreateArtistDto } from './dto/create-artist.dto';
+import { UpdateArtistDto } from './dto/update-artist.dto';
 
 @Controller('artists')
 export class ArtistsController {
   constructor(private readonly artistsService: ArtistsService) {}
 
   @Get()
-  findAll() {
-    return this.artistsService.findAll();
+  findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.artistsService.findAll(paginationOptions(page, limit));
   }
 
   @Get('/:id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.artistsService.findOne(id);
   }
 
   @Post()
-  @UseInterceptors(FileInterceptor('avatar',multerConfig))
-  create(@Body() data: any,@UploadedFile() file: Express.Multer.File) {
-    return this.artistsService.create(data,file);
+  @RequirePermissions('artists:create')
+  @UseGuards(RoleGuard)
+  @UseInterceptors(FileInterceptor('avatar', imageMulterConfig))
+  create(
+    @Body() data: CreateArtistDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.artistsService.create(data, file);
   }
 
   @Patch('/:id')
-  @UseInterceptors(FileInterceptor('avatar',multerConfig))
-  update(@Param('id') id: number, @Body() data: any,@UploadedFile() file: Express.Multer.File) {
+  @RequirePermissions('artists:update')
+  @UseGuards(RoleGuard)
+  @UseInterceptors(FileInterceptor('avatar', imageMulterConfig))
+  update(
+    @Param('id') id: string,
+    @Body() data: UpdateArtistDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
     return this.artistsService.update(id, data, file);
   }
 
   @Delete('/:id')
-  delete(@Param('id') id: number) {
+  @RequirePermissions('artists:delete')
+  @UseGuards(RoleGuard)
+  delete(@Param('id') id: string) {
     return this.artistsService.delete(id);
   }
 
   @Post('bulk')
-  createMany(@Body() artists: any[]) {
+  @RequirePermissions('artists:create')
+  @UseGuards(RoleGuard)
+  createMany(@Body() artists: CreateArtistDto[]) {
     return this.artistsService.createMany(artists);
   }
 }

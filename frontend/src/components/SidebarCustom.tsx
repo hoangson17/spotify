@@ -1,35 +1,37 @@
-import React, { useState, useEffect, act } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { IoMenu } from "react-icons/io5";
-import { FaMusic } from "react-icons/fa";
-import { Heart, Plus, ThumbsUp } from "lucide-react";
-import { playlistService } from "@/services/playlistService";
-import {
-  addPlaylist,
-  deletePlaylist,
-  updatePlaylist,
-  getPlaylist,
-} from "@/stores/actions/playlistActions";
-import { Button } from "./ui/button";
+import { uploadErrorMessage } from "@/utils/upload";
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import { playlistService } from "@/services/playlistService";
+import { getLikeTracks } from "@/stores/actions/likeTracksAction";
+import {
+  addPlaylist,
+  deletePlaylist,
+  getPlaylist,
+  updatePlaylist,
+} from "@/stores/actions/playlistActions";
+import { Label } from "@radix-ui/react-dropdown-menu";
+import { Heart, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { FaMusic } from "react-icons/fa";
+import { IoMenu } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { Button } from "./ui/button";
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { DialogFooter, DialogHeader } from "./ui/dialog";
-import { Label } from "@radix-ui/react-dropdown-menu";
 import { Input } from "./ui/input";
-import { getLikeTracks } from "@/stores/actions/likeTracksAction";
-import { toast } from "sonner";
 
 const SidebarCustom = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -38,16 +40,14 @@ const SidebarCustom = () => {
   const dispatch: any = useDispatch();
   const user = useSelector((state: any) => state.auth.user);
   // console.log(user);
-  
+
   const playlist = useSelector((state: any) => state.playlist.playlist);
-  const { likedTracks, loading } = useSelector(
-    (state: any) => state.likedTracks
-  );
+  const { likedTracks } = useSelector((state: any) => state.likedTracks);
 
   useEffect(() => {
     if (user?.id) {
-      dispatch(getPlaylist());
-      dispatch(getLikeTracks(user.id));
+      dispatch(getPlaylist(1, 100));
+      dispatch(getLikeTracks(user.id, 1, 100));
     }
   }, [user?.id, dispatch]);
 
@@ -68,7 +68,6 @@ const SidebarCustom = () => {
 
     try {
       const res = await playlistService.createPlaylist({
-        user_id: user.id,
         title: "New Playlist",
       });
 
@@ -83,17 +82,17 @@ const SidebarCustom = () => {
 
       dispatch(addPlaylist(newPlaylist));
 
-      return newPlaylist; 
+      return newPlaylist;
     } catch (error) {
       console.error("Tạo playlist thất bại:", error);
-      throw error; 
+      throw new Error(uploadErrorMessage(error, "Tạo playlist thất bại"));
     }
   };
 
-  const handleDeletePlaylist = async (playlistId: number) => {
+  const handleDeletePlaylist = async (playlistId: string) => {
     try {
       await playlistService.deletePlaylist(playlistId);
-      dispatch(deletePlaylist(playlistId)); 
+      dispatch(deletePlaylist(playlistId));
     } catch (error) {
       console.error("Xóa playlist thất bại:", error);
     }
@@ -110,10 +109,7 @@ const SidebarCustom = () => {
 
       const res = await playlistService.updatePlaylist(
         editingPlaylist.id,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
+        formData
       );
 
       const updated = res.data;
@@ -122,6 +118,7 @@ const SidebarCustom = () => {
       setEditingPlaylist(null);
     } catch (err) {
       console.error("Lỗi update playlist:", err);
+      toast.error(uploadErrorMessage(err, "Cập nhật playlist thất bại"));
     }
   };
 
@@ -211,7 +208,7 @@ const SidebarCustom = () => {
               toast.promise(handleCreatePlaylist(), {
                 loading: "Đang tạo playlist...",
                 success: (data) => `Playlist "${data.title}" đã được tạo`,
-                error: "Tạo playlist thất bại!",
+                error: (error) => error.message || "Tạo playlist thất bại!",
               });
             }}
           >

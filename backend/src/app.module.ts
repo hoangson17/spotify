@@ -1,45 +1,58 @@
-import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { AuthModule } from './modules/auth/auth.module';
-import { RedisModule } from '@nestjs-modules/ioredis';
-import { ArtistsModule } from './modules/artists/artists.module';
-import { PlaylistModule } from './modules/playlist/playlist.module';
-import { AlbumModule } from './modules/album/album.module';
-import { TrackModule } from './modules/track/track.module';
-import { UserModule } from './modules/user/user.module';
-import { join } from 'path';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { SearchModule } from './modules/search/search.module';
-import { BullModule } from '@nestjs/bullmq';
-import Mail from './utils/mail';
-import { EmailConsumer } from './consumer/email.consumer';
+import { getRedisConnectionToken, RedisModule } from '@nestjs-modules/ioredis';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
+import { BullModule } from '@nestjs/bullmq';
+import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { join } from 'path';
+import Redis from 'ioredis';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { CacheModule } from './cache/cache.module';
+import { getThrottlerConfig } from './config/throttler.config';
+import { EmailConsumer } from './consumer/email.consumer';
+import { AlbumModule } from './modules/album/album.module';
+import { ArtistsModule } from './modules/artists/artists.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { PlaylistModule } from './modules/playlist/playlist.module';
+import { SearchModule } from './modules/search/search.module';
+import { TrackModule } from './modules/track/track.module';
+import { RedisThrottlerStorage } from './throttler/redis-throttler.storage';
+import { UserModule } from './modules/user/user.module';
+import { CategoryModule } from './modules/category/category.module';
+import Mail from './utils/mail';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    RedisModule.forRoot({
+      type: 'single',
+      url: `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || 6379}`,
+    }),
+    ThrottlerModule.forRootAsync({
+      inject: [getRedisConnectionToken()],
+      useFactory: (redis: Redis) => ({
+        ...getThrottlerConfig(),
+        storage: new RedisThrottlerStorage(redis),
+      }),
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
-      port: process.env.DB_PORT as unknown as number,
+      port: Number(process.env.DB_PORT || 3306),
       username: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      synchronize:
-        process.env.DB_NODE_ENV === 'development' || !process.env.DB_NODE_ENV,
-      logging: true,
+      synchronize: process.env.DB_NODE_ENV === 'development',
+      logging: process.env.DB_NODE_ENV === 'development',
       autoLoadEntities: true,
-    }),
-    RedisModule.forRoot({
-      type: 'single',
-      url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
@@ -60,10 +73,11 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
     }),
     BullModule.forRoot({
       connection: {
-        host: 'localhost',
-        port: 6379,
+        host: process.env.REDIS_HOST || 'localhost',
+        port: Number(process.env.REDIS_PORT || 6379),
       },
     }),
+    CacheModule,
     AuthModule,
     ArtistsModule,
     PlaylistModule,
@@ -71,8 +85,17 @@ import { EjsAdapter } from '@nestjs-modules/mailer/dist/adapters/ejs.adapter';
     TrackModule,
     UserModule,
     SearchModule,
+    CategoryModule,
   ],
   controllers: [AppController],
-  providers: [AppService, Mail, EmailConsumer],
+  providers: [
+    AppService,
+    Mail,
+    EmailConsumer,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}

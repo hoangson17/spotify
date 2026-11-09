@@ -1,38 +1,50 @@
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { uploadErrorMessage } from "@/utils/upload";
+import { Can } from "@/components/Can";
 import { getAlbums } from "@/stores/actions/albumActions";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 import {
-  Table, TableBody, TableCell,
-  TableHead, TableHeader, TableRow
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 
 import {
-  Dialog, DialogContent, DialogHeader,
-  DialogTitle, DialogFooter
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
 import { albumService } from "@/services/albumService";
-import { toast } from "sonner";
 import { getArtist } from "@/stores/actions/artistActions";
+import { toast } from "sonner";
+import { mediaUrl } from "@/utils/media";
+import PaginationControls from "@/components/PaginationControls";
 
 const AddAlbum = () => {
   const dispatch = useDispatch();
   const data = useSelector((state: any) => state.albums.albums || []);
+  const meta = useSelector((state: any) => state.albums.meta);
   const dataArtists = useSelector((state: any) => state.artists.artists || []);
 
   const [openModal, setOpenModal] = useState(false);
-  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [isEdit, setIsEdit] = useState(false);
 
   const [artistId, setArtistId] = useState("");
   const [title, setTitle] = useState("");
   const [coverImage, setCoverImage] = useState<File | null>(null);
-
 
   const handleOpenCreate = () => {
     setIsEdit(false);
@@ -41,7 +53,6 @@ const AddAlbum = () => {
     setCoverImage(null);
     setOpenModal(true);
   };
-
 
   const handleOpenEdit = (item: any) => {
     setIsEdit(true);
@@ -70,36 +81,38 @@ const AddAlbum = () => {
         toast.success("Tạo album thành công!");
       }
 
-      dispatch(getAlbums() as any);
+      dispatch(getAlbums(page, 20) as any);
       setOpenModal(false);
-
     } catch (error) {
-      toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
+      toast.error(
+        uploadErrorMessage(error, "Đã xảy ra lỗi. Vui lòng thử lại.")
+      );
     }
-  }
+  };
 
   useEffect(() => {
-    dispatch(getAlbums() as any);
-    dispatch(getArtist() as any);
-  }, [dispatch]);
+    dispatch(getAlbums(page, 20) as any);
+    dispatch(getArtist(1, 100) as any);
+  }, [dispatch, page]);
 
-  
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await albumService.removeAlbum(id);
-      dispatch(getAlbums() as any);
+      dispatch(getAlbums(page, 20) as any);
       toast.success("Xoá album thành công!");
     } catch (error) {
-      toast.error("Không thể xoá album.");
+      toast.error(uploadErrorMessage(error, "Không thể xoá album."));
     }
-  }
+  };
 
   return (
     <div className="p-4">
       {/* Header */}
       <div className="w-full mb-3 flex justify-between">
         <h2 className="text-xl font-semibold">Danh sách Album</h2>
-        <Button onClick={handleOpenCreate}>Add album +</Button>
+        <Can permission="albums:create">
+          <Button onClick={handleOpenCreate}>Add album +</Button>
+        </Can>
       </div>
 
       {/* Table */}
@@ -127,9 +140,7 @@ const AddAlbum = () => {
                     <TableCell>
                       <Avatar className="h-12 w-12 rounded-md">
                         <AvatarImage
-                          src={item.cover_image.startsWith("http")
-                            ? item.cover_image
-                            : `${import.meta.env.VITE_SERVER_API}${item.cover_image}`}
+                          src={mediaUrl(item.cover_image)}
                         />
                         <AvatarFallback>AL</AvatarFallback>
                       </Avatar>
@@ -159,13 +170,25 @@ const AddAlbum = () => {
 
                     <TableCell>
                       <div className="flex justify-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleOpenEdit(item)}>
-                          Update
-                        </Button>
+                        <Can permission="albums:update">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenEdit(item)}
+                          >
+                            Update
+                          </Button>
+                        </Can>
 
-                        <Button variant="destructive" size="sm" onClick={() => handleDelete(item.id)}>
-                          Delete
-                        </Button>
+                        <Can permission="albums:delete">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            Delete
+                          </Button>
+                        </Can>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -182,11 +205,15 @@ const AddAlbum = () => {
         </div>
       </div>
 
+      <PaginationControls meta={meta} onPageChange={setPage} />
+
       {/* Dialog */}
       <Dialog open={openModal} onOpenChange={setOpenModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{isEdit ? "Update Album" : "Create Album"}</DialogTitle>
+            <DialogTitle>
+              {isEdit ? "Update Album" : "Create Album"}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-3 mt-2">
@@ -220,9 +247,11 @@ const AddAlbum = () => {
             <Button variant="outline" onClick={() => setOpenModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>
-              {isEdit ? "Update" : "Create"}
-            </Button>
+            <Can permission={isEdit ? "albums:update" : "albums:create"}>
+              <Button onClick={handleSubmit}>
+                {isEdit ? "Update" : "Create"}
+              </Button>
+            </Can>
           </DialogFooter>
         </DialogContent>
       </Dialog>

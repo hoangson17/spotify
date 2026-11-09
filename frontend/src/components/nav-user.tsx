@@ -1,36 +1,34 @@
+import { logout } from '@/stores/actions/authActions';
 import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-  HomeIcon
-} from "lucide-react"
+ChevronsUpDown,
+HomeIcon,
+LogOut,
+Sparkles
+} from "lucide-react";
 
 import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+Avatar,
+AvatarFallback,
+AvatarImage,
+} from "@/components/ui/avatar";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+DropdownMenu,
+DropdownMenuContent,
+DropdownMenuGroup,
+DropdownMenuItem,
+DropdownMenuLabel,
+DropdownMenuSeparator,
+DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from "@/components/ui/sidebar"
-import { useDispatch } from "react-redux"
-import { useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+SidebarMenu,
+SidebarMenuButton,
+SidebarMenuItem,
+useSidebar,
+} from "@/components/ui/sidebar";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { Link,useNavigate } from "react-router-dom";
 
 export function NavUser({
   user,
@@ -49,8 +47,8 @@ export function NavUser({
 
   }, [dispatch]);
 
-  const handleLogout = () => {
-    dispatch({ type: "LOGOUT" });
+  const handleLogout = async () => {
+    await dispatch(logout() as any);
     navigate("/login");
   }
   

@@ -6,6 +6,10 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "migrate:rbac": "node scripts/migrate-rbac.cjs",
+    "test:rbac": "node --test scripts/migrate-rbac.test.cjs",
+    "seed:super-admin": "node scripts/super-admin.cjs",
+    "test:super-admin": "node --test scripts/super-admin.test.cjs",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -30,12 +34,14 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.1.7",
     "@nestjs/serve-static": "^5.0.4",
+    "@nestjs/throttler": "^6.7.1",
     "@nestjs/typeorm": "^11.0.0",
     "bcrypt": "^6.0.0",
     "bullmq": "^5.63.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.4",
     "ejs": "^3.1.10",
     "ioredis": "^5.8.1",
-    "mp3-duration": "^1.1.0",
     "multer": "^2.0.2",
     "mysql2": "^3.15.2",
     "nodemailer": "^7.0.10",
@@ -85,6 +91,9 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   }
 }

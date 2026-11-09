@@ -20,6 +20,7 @@ import {
 import { Label } from "@radix-ui/react-dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { authService } from "@/services/authService";
+import { apiUrl } from "@/axiosConfig";
 
 const { FaSpotify } = icons;
 
@@ -43,7 +44,7 @@ const Auth: React.FC<AuthProps> = ({ type }) => {
   const { user, error } = useSelector((state: any) => state.auth);
 
   useEffect(() => {
-    if (user) navigate("/");
+    if (user) navigate(user.role === "super_admin" ? "/admin" : "/", { replace: true });
   }, [user, navigate]);
 
   useEffect(() => {
@@ -213,7 +214,7 @@ const Auth: React.FC<AuthProps> = ({ type }) => {
           </div>
 
           <a
-            href={`${import.meta.env.VITE_SERVER_API}/auth/google/redirect`}
+            href={apiUrl("/auth/google/redirect")}
             className="flex items-center justify-center gap-2 hover:scale-102 text-white font-semibold border border-white rounded-md py-2 transition-transform"
           >
             <FcGoogle size={25} />

@@ -1,14 +1,16 @@
 import actionTypes from "./actionTypes";
 import { trackService } from "../../services/trackService";
 
-export const getTracks = () => async (dispatch: any) => {
+export const getTracks = (page = 1, limit = 12) => async (dispatch: any) => {
+  dispatch({ type: actionTypes.GET_TRACKS_REQUEST });
   try {
-    const response = await trackService.getAllTracks();
+    const response = await trackService.getAllTracks({ page, limit });
     // console.log( response );
     if (response?.status === 200) {
       dispatch({
         type: actionTypes.GET_TRACKS_SUCCESS,
-        tracks: response.data, 
+        tracks: response.data.items,
+        meta: response.data.meta,
       });
     } else {
       dispatch({

@@ -9,7 +9,9 @@ describe('TrackController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TrackController],
       providers: [TrackService],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     controller = module.get<TrackController>(TrackController);
   });

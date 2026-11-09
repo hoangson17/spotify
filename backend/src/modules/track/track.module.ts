@@ -7,15 +7,16 @@ import { Track } from 'src/entities/track.entity';
 import { Artist } from 'src/entities/artist.entity';
 import { Album } from 'src/entities/album.entity';
 import { AuthModule } from '../auth/auth.module';
+import { Category } from 'src/entities/category.entity';
 
 @Module({
   controllers: [TrackController],
   providers: [TrackService],
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
     }),
-    TypeOrmModule.forFeature([Track,Artist,Album]),
+    TypeOrmModule.forFeature([Track, Artist, Album, Category]),
     AuthModule,
   ],
 })

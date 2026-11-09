@@ -1,15 +1,16 @@
-import React, { useEffect, useRef, useState } from "react";
-import icons from "../utils/icons";
 import { Slider } from "@/components/ui/slider";
-import songImg from "../assets/none.png";
-import { useSelector, useDispatch } from "react-redux";
-import { togglePlay } from "@/stores/actions/playerActions";
-import { toast } from "sonner";
 import { likeTrackService } from "@/services/likeTrackService";
 import {
-  addLikeTrack,
-  removeLikeTrack,
+addLikeTrack,
+removeLikeTrack,
 } from "@/stores/actions/likeTracksAction";
+import { togglePlay } from "@/stores/actions/playerActions";
+import React,{ useEffect,useRef,useState } from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { toast } from "sonner";
+import songImg from "../assets/none.png";
+import icons from "../utils/icons";
+import { mediaUrl, useFallbackImage } from "../utils/media";
 
 const {
   FaPlay,
@@ -36,10 +37,8 @@ const Playbar: React.FC = () => {
 
   // Đồng bộ playQueue khi queue thay đổi
   useEffect(() => {
-    if (queue.length > 0) {
-      setPlayQueue(queue);
-      setCurrentIndex(0);
-    }
+    setPlayQueue(queue);
+    setCurrentIndex(0);
   }, [queue]);
 
   // Khi currentIndex thay đổi, load bài mới
@@ -49,6 +48,10 @@ const Playbar: React.FC = () => {
       audioRef.current.src = `${import.meta.env.VITE_SERVER_API}${track.audio_url}`;
       audioRef.current.load();
       if (isPlaying) audioRef.current.play().catch((err) => console.warn(err));
+    } else if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.removeAttribute('src');
+      audioRef.current.load();
     }
   }, [currentIndex, playQueue]);
 
@@ -72,6 +75,10 @@ const Playbar: React.FC = () => {
   };
 
   const handleEnded = () => {
+    if (playQueue.length <= 1) {
+      if (isPlaying) dispatch(togglePlay());
+      return;
+    }
     handleNext();
   };
 
@@ -127,7 +134,7 @@ const Playbar: React.FC = () => {
   const currentTrack = playQueue[currentIndex];
   const isLiked = likedTracks?.some((t: any) => t.id === currentTrack?.id);
 
-  const handleLikeTrack = async (userId: number, trackId: number) => {
+  const handleLikeTrack = async (userId: string | undefined, trackId: string) => {
     try {
       if (!userId) {
         toast.error("Bạn cần đăng nhập để thích bài hát");
@@ -176,7 +183,8 @@ const Playbar: React.FC = () => {
         <div className="flex items-center gap-3 w-[30%] min-w-[200px]">
           {currentTrack && (
             <img
-              src={`${import.meta.env.VITE_SERVER_API}${currentTrack?.image_url}` || songImg}
+              src={mediaUrl(currentTrack.image_url, songImg)}
+              onError={(event) => useFallbackImage(event, songImg)}
               alt={currentTrack.title}
               className="w-[56px] h-[56px] rounded-md object-cover"
             />
@@ -186,12 +194,12 @@ const Playbar: React.FC = () => {
               {currentTrack?.title}
             </span>
             <span className="text-xs text-gray-400 truncate w-[160px]">
-              {currentTrack?.artist || ""}
+              {currentTrack?.artists?.map((artist: { name: string }) => artist.name).join(', ') || ""}
             </span>
           </div>
           {currentTrack && (
             <button
-              onClick={() => handleLikeTrack(user.id, currentTrack.id)}
+              onClick={() => handleLikeTrack(user?.id, currentTrack.id)}
               className={`${
                 isLiked ? "text-red-500" : "text-gray-400"
               } hover:text-white transition`}

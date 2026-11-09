@@ -1,14 +1,14 @@
-import { data } from "react-router-dom";
 import AxiosInstance from "../axiosConfig";
+import type { PaginationParams } from "@/types/pagination";
 
 export const artistService = {
-    getAllArtists() {
-        return AxiosInstance.get("/artists");
+    getAllArtists(params: PaginationParams = {}) {
+        return AxiosInstance.get("/artists", { params });
     },
-    getArtistById(id: number) {
+    getArtistById(id: string) {
         return AxiosInstance.get(`/artists/${id}`);
     },
-    removeArtist(id: number) {
+    removeArtist(id: string) {
         return AxiosInstance.delete(`/artists/${id}`);
     },
     createArtist(data: any) {
@@ -18,15 +18,15 @@ export const artistService = {
             }
         });
     },
-    updateArtist(id: number, data: any) {
+    updateArtist(id: string, data: any) {
         return AxiosInstance.patch(`/artists/${id}`, data,{
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
         });
     },
-    deleteTracks(artistId: number) {
-        return AxiosInstance.delete(`/artist-track/delete/${artistId}`);
+    deleteTracks(artistId: string) {
+        return AxiosInstance.delete(`/artist-track/delete`, { data: { artistId } });
     },
     syncTrack(data:any){
         return AxiosInstance.post(`/artist-track/sync`,data);

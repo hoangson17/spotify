@@ -1,4 +1,3 @@
-import { Delete } from '@nestjs/common';
 import {
   Column,
   DeleteDateColumn,
@@ -14,30 +13,30 @@ import { User } from './user.entity';
  
 @Entity('playlists')
 export class Playlist {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @ManyToOne(() => User, (user) => user.playlists, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
-  users: User;
+  users!: User;
  
   @Column({
     type: 'varchar',
     length: 100,
   })
-  title: string;
+  title!: string;
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  description: string;
+  description?: string;
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  cover_image: string;
+  cover_image?: string;
 
   @ManyToMany(() => Track, (track) => track.playlists)
   @JoinTable({
@@ -51,21 +50,21 @@ export class Playlist {
       referencedColumnName: 'id',
     },
   }) 
-  tracks: Track[];
+  tracks!: Track[];
 
   @Column({
     type: 'tinyint',
     default: 1,
   })
-  is_public: number;
+  is_public!: number;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP', 
   })
-  created_at: Date;
+  created_at!: Date;
 
   @DeleteDateColumn()
-  deleted_at: Date;
+  deleted_at?: Date;
 }
  

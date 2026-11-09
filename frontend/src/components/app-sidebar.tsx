@@ -1,164 +1,95 @@
-"use client"
-
-import * as React from "react"
 import {
-  SquareTerminal,
-  Users,
-  PlayCircleIcon,
-  Music,
   Album,
+  Home,
+  Music,
+  PlayCircleIcon,
+  ShieldCheck,
+  Tags,
   User,
-} from "lucide-react"
-
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+  Users,
+} from "lucide-react";
+import type { ComponentProps } from "react";
+import { useSelector } from "react-redux";
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import icons from "@/utils/icons"
-import { useSelector } from "react-redux"
+} from "@/components/ui/sidebar";
+import icons from "@/utils/icons";
+import { hasPermission } from "@/utils/roles";
 
+const navigation = [
+  { title: "Trang quản trị", url: "/admin", icon: Home },
+  {
+    title: "Phân quyền admin",
+    url: "/admin/permissions",
+    icon: ShieldCheck,
+    permission: "rbac:manage",
+  },
+  {
+    title: "Artists",
+    url: "/admin/artist",
+    icon: Users,
+    permission: "artists:read",
+  },
+  {
+    title: "Albums",
+    url: "/admin/album",
+    icon: Album,
+    permission: "albums:read",
+  },
+  {
+    title: "Tracks",
+    url: "/admin/track",
+    icon: Music,
+    permission: "tracks:read",
+  },
+  {
+    title: "Categories",
+    url: "/admin/category",
+    icon: Tags,
+    permission: "categories:read",
+  },
+  { title: "Users", url: "/admin/user", icon: Users, permission: "users:read" },
+  {
+    title: "Playlists",
+    url: "/admin/playlist",
+    icon: PlayCircleIcon,
+    permission: "playlists:read",
+  },
+  { title: "My Profile", url: "/admin/profile", icon: User },
+];
 
-const data = {
-  navMain: [
-    {
-      title: "Artists",
-      url: "artist",
-      icon: Users,
-      isActive: true,
-      items: [
-        // {
-        //   title: "Create artist",
-        //   url: "artist",
-        // },
-        // {
-        //   title: "Update artist",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Artist details",
-        //   url: "#",
-        // },
-      ],
-    },
-    {
-      title: "Albums",
-      url: "album",
-      icon: Album,
-      items: [
-        // {
-        //   title: "Create album",
-        //   url: "album",
-        // },
-        // {
-        //   title: "Update album",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Details album",
-        //   url: "#",
-        // },
-      ],
-    },
-    {
-      title: "Tracks",
-      url: "track",
-      icon: Music,
-      items: [
-        // {
-        //   title: "Create track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Update track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Details track",
-        //   url: "#",
-        // }
-      ],
-    },
-    {
-      title: "Users",
-      url: "user",
-      icon: Users,
-      items: [
-        // {
-        //   title: "Create track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Update track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Details track",
-        //   url: "#",
-        // }
-      ],
-    },
-    {
-      title: "Playlists",
-      url: "playlist",
-      icon: PlayCircleIcon,
-      items: [
-        // {
-        //   title: "Create track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Update track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Details track",
-        //   url: "#",
-        // }
-      ],
-    },
-    {
-      title: "My Profile",
-      url: "profile",
-      icon: User,
-      items: [
-        // {
-        //   title: "Create track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Update track",
-        //   url: "#",
-        // },
-        // {
-        //   title: "Details track",
-        //   url: "#",
-        // }
-      ],
-    }
-  ],
-}
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
   const user = useSelector((state: any) => state.auth.user || {});
+  const items = navigation.filter(
+    (item) => !item.permission || hasPermission(user, item.permission),
+  );
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={[{ name: "Spotify", logo: icons.FaSpotify, plan: "Admin" }]} />
+        <TeamSwitcher
+          teams={[
+            {
+              name: "Spotify",
+              logo: icons.FaSpotify,
+              plan: user.role === "super_admin" ? "Super Admin" : "Admin",
+            },
+          ]}
+        />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={items} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

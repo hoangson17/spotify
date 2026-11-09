@@ -5,15 +5,22 @@ import {
   Get,
   Param,
   Patch,
-  Post,
+  Put,
+  Query,
+  Request,
   UploadedFile,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerConfig } from 'src/config/multer.config';
+import { imageMulterConfig } from 'src/config/multer.config';
+import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { RoleGuard } from 'src/guards/role/role.guard';
+import { UserService } from './user.service';
+import { RequirePermissions } from 'src/utils/permissions';
+import { paginationOptions } from 'src/utils/pagination';
+import { SetPermissionsDto } from './dto/set-permissions.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -21,41 +28,73 @@ export class UserController {
 
   @UseGuards(RoleGuard)
   @Get('all')
-  getAllUsers() {
-    return this.userService.getAllUsers();
+  @RequirePermissions('users:read')
+  getAllUsers(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.userService.getAllUsers(paginationOptions(page, limit));
   }
 
   @UseGuards(RoleGuard)
   @Get('lock')
-  getUserLock() {
-    return this.userService.getUserLock();
+  @RequirePermissions('users:read')
+  getUserLock(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.userService.getUserLock(paginationOptions(page, limit));
   }
 
   @Patch('restore/:id')
+  @RequirePermissions('users:restore')
   @UseGuards(RoleGuard)
-  restore(@Param('id') id: number) {
-    return this.userService.restore(id);
+  restore(@Param('id') id: string, @Request() req: any) {
+    return this.userService.restore(id, req.user);
   }
 
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('avatar', multerConfig))
+  @UseGuards(AuthGuard)
+  @UseInterceptors(FileInterceptor('avatar', imageMulterConfig))
   async update(
-    @Param('id') id: number,
-    @Body() body: any,
+    @Param('id') id: string,
+    @Body() body: UpdateUserDto,
     @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
   ) {
-    return this.userService.update(id, body, file);
+    return this.userService.update(id, body, file, req.user);
   }
 
   @Delete(':id')
+  @RequirePermissions('users:lock')
   @UseGuards(RoleGuard)
-  async removeUser(@Param('id') id: number) {
-    return this.userService.deleteUser(id);
+  async removeUser(@Param('id') id: string, @Request() req: any) {
+    return this.userService.deleteUser(id, req.user);
   }
 
   @Delete('hard-delete/:id')
+  @RequirePermissions('users:delete')
   @UseGuards(RoleGuard)
-  async hardDeleteUser(@Param('id') id: number) {
-    return this.userService.hardDelete(id);
+  async hardDeleteUser(@Param('id') id: string, @Request() req: any) {
+    return this.userService.hardDelete(id, req.user);
+  }
+
+  @Get('permission-catalog')
+  @UseGuards(RoleGuard)
+  @RequirePermissions('rbac:manage')
+  permissionCatalog() {
+    return this.userService.permissionCatalog();
+  }
+
+  @Get('admins')
+  @UseGuards(RoleGuard)
+  @RequirePermissions('rbac:manage')
+  admins(@Query('page') page?: string, @Query('limit') limit?: string) {
+    return this.userService.getAdmins(paginationOptions(page, limit));
+  }
+
+  @Put(':id/permissions')
+  @UseGuards(RoleGuard)
+  @RequirePermissions('rbac:manage')
+  setPermissions(
+    @Param('id') id: string,
+    @Body() body: SetPermissionsDto,
+    @Request() req: any,
+  ) {
+    return this.userService.setPermissions(id, body, req.user);
   }
 }

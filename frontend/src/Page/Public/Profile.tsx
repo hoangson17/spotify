@@ -1,16 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Input } from "@/components/ui/input";
+import { UploadLimitHint } from "@/components/UploadLimitHint";
+import { uploadErrorMessage } from "@/utils/upload";
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authService } from "@/services/authService";
-import { toast } from "sonner";
+import { logout, setProfile } from "@/stores/actions/authActions";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import actionTypes from "@/stores/actions/actionTypes";
-import { setProfile } from "@/stores/actions/authActions";
+import { toast } from "sonner";
+import { mediaUrl } from "@/utils/media";
 
 const Profile = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [preview, setPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -23,11 +27,7 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       setName(user.name || "");
-      setPreview(
-        user.avatar?.startsWith("http")
-          ? user.avatar
-          : `${import.meta.env.VITE_SERVER_API}${user.avatar}`
-      );
+      setPreview(mediaUrl(user.avatar));
     }
   }, [user]);
 
@@ -50,22 +50,23 @@ const Profile = () => {
 
     try {
       const res = await authService.updateProfile(user.id, formData);
+      if (password) {
+        await dispatch(logout() as any);
+        navigate("/login", { replace: true });
+        toast.success("Đã đổi mật khẩu. Vui lòng đăng nhập lại.");
+        return;
+      }
 
       toast.success("Cập nhật thành công!");
 
       dispatch(setProfile(res.data) as any);
-
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Có lỗi xảy ra");
+    } catch (err) {
+      toast.error(uploadErrorMessage(err, "Có lỗi xảy ra"));
     }
   };
 
   const getAvatar = () => {
-    if (!preview) return "/default-avatar.png";
-    if (preview.startsWith("blob:")) return preview;
-    return preview.startsWith("http")
-      ? preview
-      : `${import.meta.env.VITE_SERVER_API}${preview}`;
+    return mediaUrl(preview);
   };
 
   return (
@@ -100,7 +101,7 @@ const Profile = () => {
 
           <div className="text-gray-400">
             <p className="text-sm">Ảnh đại diện</p>
-            <p className="text-xs opacity-70">Chọn ảnh JPG, PNG (tối đa 3MB)</p>
+            <UploadLimitHint kind="image" />
           </div>
         </div>
 

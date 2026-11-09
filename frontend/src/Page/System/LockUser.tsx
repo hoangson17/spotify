@@ -1,48 +1,54 @@
 import { getLockedUsers } from "@/stores/actions/authActions";
-import React, { useEffect } from "react";
+import { canManageAccount } from "@/utils/roles";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { authService } from "@/services/authService";
-import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { toast } from "sonner";
+import { mediaUrl } from "@/utils/media";
+import PaginationControls from "@/components/PaginationControls";
 
 const LockUser = () => {
   const dispatch = useDispatch();
   const users = useSelector((state: any) => state.auth.lockUser || []);
+  const meta = useSelector((state: any) => state.auth.lockUserMeta);
+  const actor = useSelector((state: any) => state.auth.user);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
-    dispatch(getLockedUsers() as any);
-  }, [dispatch]);
+    dispatch(getLockedUsers(page, 20) as any);
+  }, [dispatch, page]);
 
   const formatDate = (dateStr: string) =>
     dateStr ? new Date(dateStr).toLocaleDateString("vi-VN") : "";
 
-  const getAvatar = (avatar: string | null) =>
-    avatar
-      ? avatar.startsWith("http")
-        ? avatar
-        : `${import.meta.env.VITE_SERVER_API}${avatar}`
-      : null;
+  const getAvatar = (avatar: string | null) => mediaUrl(avatar);
 
   const handleRestore = async (user: any) => {
     try {
       await authService.restoreUser(user.id);
-      dispatch(getLockedUsers() as any);
+      dispatch(getLockedUsers(page, 20) as any);
       toast.success("Khôi phục user thành công");
     } catch {
       toast.error("Khôi phục user thất bại");
     }
   };
 
-  const handleDeleteUser = async (id: number) => {
+  const handleDeleteUser = async (id: string) => {
     try {
       await authService.hardDeleteUser(id);
-      dispatch(getLockedUsers() as any);
+      dispatch(getLockedUsers(page, 20) as any);
       toast.success("Xóa user thành công");
     } catch {
       toast.error("Xóa user thất bại");
@@ -96,12 +102,16 @@ const LockUser = () => {
                     <TableCell>
                       <span
                         className={`px-2 py-1 rounded-md text-sm ${
-                          user.role === "admin"
-                            ? "bg-red-200 text-red-700"
-                            : "bg-blue-200 text-blue-700"
+                          user.role === "super_admin"
+                            ? "bg-purple-200 text-purple-700"
+                            : user.role === "admin"
+                              ? "bg-red-200 text-red-700"
+                              : "bg-blue-200 text-blue-700"
                         }`}
                       >
-                        {user.role}
+                        {user.role === "super_admin"
+                          ? "Super Admin"
+                          : user.role}
                       </span>
                     </TableCell>
 
@@ -109,23 +119,28 @@ const LockUser = () => {
                     <TableCell>{formatDate(user.updated_at)}</TableCell>
 
                     <TableCell>
-                      <div className="flex justify-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRestore(user)}
-                        >
-                          Khôi phục
-                        </Button>
+                      {(canManageAccount(actor, user, "restore") ||
+                        canManageAccount(actor, user, "delete")) && (
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={!canManageAccount(actor, user, "restore")}
+                            onClick={() => handleRestore(user)}
+                          >
+                            Khôi phục
+                          </Button>
 
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Xóa vĩnh viễn
-                        </Button>
-                      </div>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            disabled={!canManageAccount(actor, user, "delete")}
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            Xóa vĩnh viễn
+                          </Button>
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
@@ -140,6 +155,7 @@ const LockUser = () => {
           </Table>
         </div>
       </div>
+      <PaginationControls meta={meta} onPageChange={setPage} />
     </div>
   );
 };

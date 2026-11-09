@@ -11,45 +11,45 @@ import { Track } from './track.entity';
  
 @Entity('albums')
 export class Album {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({
     type: 'varchar',
     length: 100,
   })
-  title: string;
+  title!: string;
 
   @ManyToOne(() => Artist, (artist) => artist.albums)
-  artist: Artist;
+  artist!: Artist;
 
   @OneToMany(() => Track, (track) => track.album)
-  tracks: Track[];
+  tracks!: Track[];
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  cover_image: string;
+  cover_image?: string ;
 
   @Column({
     type: 'int',
     default: 0,
   })
-  total_tracks: number;
+  total_tracks!: number;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  created_at: Date;
+  created_at!: Date;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })
-  updated_at: Date;
+  updated_at!: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;

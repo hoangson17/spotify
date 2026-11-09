@@ -1,14 +1,16 @@
 import { albumService } from "@/services/albumService";
 import actionTypes from "./actionTypes";
 
-export const getAlbums = () => async (dispatch: any) => {
+export const getAlbums = (page = 1, limit = 12) => async (dispatch: any) => {
+    dispatch({ type: actionTypes.GET_ALBUMS_REQUEST });
     try {
-        const response = await albumService.getAllAlbum();
+        const response = await albumService.getAllAlbum({ page, limit });
         // console.log( response);
         if (response?.status === 200) {
             dispatch({
                 type: actionTypes.GET_ALBUMS_SUCCESS,
-                albums: response.data,
+                albums: response.data.items,
+                meta: response.data.meta,
             });
         } else {
             dispatch({
@@ -24,7 +26,8 @@ export const getAlbums = () => async (dispatch: any) => {
     }
 };
 
-export const getAlbumById = (id: number) => async (dispatch: any) => {
+export const getAlbumById = (id: string) => async (dispatch: any) => {
+    dispatch({ type: actionTypes.GET_ALBUMS_REQUEST });
     try {
         const response = await albumService.getAlbumById(id);
         // console.log( response);

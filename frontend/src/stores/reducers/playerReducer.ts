@@ -1,5 +1,4 @@
 import actionTypes from "../actions/actionTypes";
-import { queue } from "../actions/playerActions";
 
 const initialState = {
   currentSong: null,

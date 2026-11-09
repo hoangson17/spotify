@@ -1,4 +1,3 @@
-import { Delete } from '@nestjs/common';
 import {
   Column,
   DeleteDateColumn,
@@ -8,32 +7,33 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Track } from './track.entity';
 import { Follower } from './follower.entity';
 import { Playlist } from './playlist.entity';
+import { Track } from './track.entity';
 
 export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
+  SUPER_ADMIN = 'super_admin',
 }
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({
     type: 'varchar',
     length: 30,
   })
-  name: string;
+  name!: string;
 
   @Column({
     type: 'varchar',
     length: 100,
     unique: true,
   })
-  email: string;
+  email!: string;
 
   @ManyToMany(() => Track, (track) => track.users)
   @JoinTable({
@@ -47,49 +47,53 @@ export class User {
       referencedColumnName: 'id',
     },
   })
-  tracks: Track[];
+  tracks!: Track[];
 
   @OneToMany(() => Follower, (follower) => follower.follower)
-  following: Follower[];
+  following!: Follower[];
 
   @OneToMany(() => Follower, (follower) => follower.following_id)
-  followers: Follower[];
+  followers!: Follower[];
 
   @OneToMany(() => Playlist, (playlist) => playlist.users)
-  playlists: Playlist[];
+  playlists!: Playlist[];
 
   @Column({
     type: 'enum',
     enum: UserRole,
     default: UserRole.USER,
   })
-  role: UserRole;
+  role!: UserRole;
+
+  @Column({ type: 'simple-json', nullable: true })
+  permissions!: string[] | null;
 
   @Column({
     type: 'varchar',
     length: 100,
     nullable: true,
+    select: false,
   })
-  password: string;
+  password?: string;
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  avatar: string;
+  avatar!: string;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  created_at: string;
+  created_at!: Date;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })
-  updated_at: string;
+  updated_at!: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;

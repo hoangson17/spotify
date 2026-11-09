@@ -1,7 +1,18 @@
 import { getAllUsers } from "@/stores/actions/authActions";
-import React, { useEffect } from "react";
+import { canManageAccount } from "@/utils/roles";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -10,31 +21,29 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { authService } from "@/services/authService";
-import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 import { useState } from "react";
+import { mediaUrl } from "@/utils/media";
+import PaginationControls from "@/components/PaginationControls";
 
 const User = () => {
   const dispatch = useDispatch();
   const users = useSelector((state: any) => state.auth.allUser || []);
+  const meta = useSelector((state: any) => state.auth.allUserMeta);
+  const actor = useSelector((state: any) => state.auth.user);
   const [openDialog, setOpenDialog] = useState(false);
+  const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [role, setRole] = useState("user");
+  const [profile, setProfile] = useState({ name: "", email: "", password: "" });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    dispatch(getAllUsers() as any);
-  }, [dispatch]);
+    dispatch(getAllUsers(page, 20) as any);
+  }, [dispatch, page]);
 
   console.log(users);
 
@@ -47,19 +56,18 @@ const User = () => {
   const handleOpenUpdate = (user: any) => {
     setSelectedUser(user);
     setRole(user.role);
+    setProfile({ name: user.name, email: user.email, password: "" });
     setOpenDialog(true);
   };
 
   const getAvatar = (avatar: string | null) => {
-    if (!avatar) return null;
-    if (avatar.startsWith("http")) return avatar;
-    return `${import.meta.env.VITE_SERVER_API}${avatar}`;
+    return mediaUrl(avatar);
   };
 
-  const handleDeleteUser = async (id: number) => {
+  const handleDeleteUser = async (id: string) => {
     try {
       await authService.deleteUser(id);
-      dispatch(getAllUsers() as any);
+      dispatch(getAllUsers(page, 20) as any);
       toast.success("Xóa user thành công");
     } catch (err) {
       toast.error("Xóa user thất bại");
@@ -67,17 +75,25 @@ const User = () => {
   };
 
   const handleUpdateRole = async () => {
+    if (saving) return;
+    setSaving(true);
     try {
       const formData = new FormData();
-      formData.append("role", role);
+      formData.append("name", profile.name);
+      formData.append("email", profile.email);
+      if (profile.password) formData.append("password", profile.password);
+      if (actor?.role === "super_admin" && role !== selectedUser.role)
+        formData.append("role", role);
 
       await authService.updateProfile(selectedUser.id, formData);
 
-      toast.success("Cập nhật quyền thành công!");
+      toast.success("Cập nhật tài khoản thành công!");
       setOpenDialog(false);
-      dispatch(getAllUsers() as any);
-    } catch (err) {
-      toast.error("Cập nhật quyền thất bại");
+      dispatch(getAllUsers(page, 20) as any);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Cập nhật tài khoản thất bại");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -130,12 +146,16 @@ const User = () => {
                     <TableCell>
                       <span
                         className={`px-2 py-1 rounded-md text-sm ${
-                          user.role === "admin"
-                            ? "bg-red-200 text-red-700"
-                            : "bg-blue-200 text-blue-700"
+                          user.role === "super_admin"
+                            ? "bg-purple-200 text-purple-700"
+                            : user.role === "admin"
+                              ? "bg-red-200 text-red-700"
+                              : "bg-blue-200 text-blue-700"
                         }`}
                       >
-                        {user.role}
+                        {user.role === "super_admin"
+                          ? "Super Admin"
+                          : user.role}
                       </span>
                     </TableCell>
 
@@ -144,21 +164,33 @@ const User = () => {
 
                     <TableCell>
                       <div className="flex justify-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenUpdate(user)}
-                        >
-                          Update
-                        </Button>
+                        {canManageAccount(actor, user, "update") && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenUpdate(user)}
+                          >
+                            Chỉnh sửa
+                          </Button>
+                        )}
 
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Delete
-                        </Button>
+                        {actor?.role === "super_admin" &&
+                          user.role === "admin" && (
+                            <Button asChild variant="outline" size="sm">
+                              <Link to={`/admin/permissions?admin=${user.id}`}>
+                                RBAC
+                              </Link>
+                            </Button>
+                          )}
+                        {canManageAccount(actor, user) && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            Khóa
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -174,32 +206,93 @@ const User = () => {
           </Table>
         </div>
       </div>
+      <PaginationControls meta={meta} onPageChange={setPage} />
       <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Cập nhật quyền User</DialogTitle>
+            <DialogTitle>Cập nhật tài khoản</DialogTitle>
           </DialogHeader>
 
           {selectedUser && (
             <div className="space-y-4 mt-2">
               <div>
-                <p className="text-sm text-gray-500">Tên user</p>
-                <p className="font-medium">{selectedUser.name}</p>
+                <label
+                  className="text-sm mb-1 block"
+                  htmlFor="managed-user-name"
+                >
+                  Họ tên
+                </label>
+                <Input
+                  id="managed-user-name"
+                  value={profile.name}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      name: event.target.value,
+                    }))
+                  }
+                  disabled={saving}
+                />
               </div>
               <div>
-                <label className="text-sm text-gray-500 mb-1 block">
-                  Quyền
-                </label>
-
-                <select
-                  className="w-full border rounded-md px-3 py-2"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
+                <label
+                  className="text-sm mb-1 block"
+                  htmlFor="managed-user-email"
                 >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
+                  Email
+                </label>
+                <Input
+                  id="managed-user-email"
+                  type="email"
+                  value={profile.email}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      email: event.target.value,
+                    }))
+                  }
+                  disabled={saving}
+                />
               </div>
+              <div>
+                <label
+                  className="text-sm mb-1 block"
+                  htmlFor="managed-user-password"
+                >
+                  Mật khẩu mới (tùy chọn)
+                </label>
+                <Input
+                  id="managed-user-password"
+                  type="password"
+                  autoComplete="new-password"
+                  placeholder="Để trống để giữ nguyên"
+                  value={profile.password}
+                  onChange={(event) =>
+                    setProfile((previous) => ({
+                      ...previous,
+                      password: event.target.value,
+                    }))
+                  }
+                  disabled={saving}
+                />
+              </div>
+              {actor?.role === "super_admin" && (
+                <div>
+                  <label className="text-sm text-gray-500 mb-1 block">
+                    Quyền
+                  </label>
+
+                  <select
+                    className="w-full border rounded-md px-3 py-2"
+                    value={role}
+                    disabled={saving}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+              )}
             </div>
           )}
 
@@ -208,7 +301,9 @@ const User = () => {
               Hủy
             </Button>
 
-            <Button onClick={handleUpdateRole}>Lưu thay đổi</Button>
+            <Button disabled={saving} onClick={handleUpdateRole}>
+              {saving ? "Đang lưu…" : "Lưu thay đổi"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -9,7 +9,9 @@ describe('AlbumController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AlbumController],
       providers: [AlbumService],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     controller = module.get<AlbumController>(AlbumController);
   });

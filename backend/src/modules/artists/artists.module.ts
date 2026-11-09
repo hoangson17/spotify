@@ -1,20 +1,22 @@
 import { Module } from '@nestjs/common';
-import { ArtistsService } from './artists.service';
-import { ArtistsController } from './artists.controller';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Artist } from 'src/entities/artist.entity';
-import { ConfigModule } from '@nestjs/config';
-import { ArtistTrackController } from './artist-track.controller';
 import { Track } from 'src/entities/track.entity';
+import { AuthModule } from '../auth/auth.module';
+import { ArtistTrackController } from './artist-track.controller';
+import { ArtistsController } from './artists.controller';
+import { ArtistsService } from './artists.service';
 
 @Module({
   controllers: [ArtistsController, ArtistTrackController],
   providers: [ArtistsService],
   imports: [
+    AuthModule,
     ConfigModule.forRoot({
-      isGlobal: true
+      isGlobal: true,
     }),
-    TypeOrmModule.forFeature([Artist,Track]),
+    TypeOrmModule.forFeature([Artist, Track]),
   ],
 })
 export class ArtistsModule {}

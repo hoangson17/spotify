@@ -7,7 +7,9 @@ describe('PlaylistTrackController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PlaylistTrackController],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     controller = module.get<PlaylistTrackController>(PlaylistTrackController);
   });

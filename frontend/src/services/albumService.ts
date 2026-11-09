@@ -1,19 +1,21 @@
 import axiosIntante from "../axiosConfig";
+import type { PaginationParams } from "@/types/pagination";
 
 export const albumService =  {
-    getAllAlbum: () => axiosIntante.get('/album'),
-    getAlbumById: (id: number) => axiosIntante.get(`/album/${id}`),
-    removeAlbum: (id: number) => axiosIntante.delete(`/album/${id}`),
+    getAllAlbum: (params: PaginationParams = {}) =>
+        axiosIntante.get('/album', { params }),
+    getAlbumById: (id: string) => axiosIntante.get(`/album/${id}`),
+    removeAlbum: (id: string) => axiosIntante.delete(`/album/${id}`),
     createAlbum: (formData: FormData) => axiosIntante.post('/album', formData, {
         headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+
         },
     }),
-    updateAlbum: (id: number, formData: FormData) => axiosIntante.patch(`/album/${id}`, formData, {
+    updateAlbum: (id: string, formData: FormData) => axiosIntante.patch(`/album/${id}`, formData, {
         headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+
         },
     }),
 };

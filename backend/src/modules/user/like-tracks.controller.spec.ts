@@ -7,7 +7,9 @@ describe('LikeTracksController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LikeTracksController],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     controller = module.get<LikeTracksController>(LikeTracksController);
   });

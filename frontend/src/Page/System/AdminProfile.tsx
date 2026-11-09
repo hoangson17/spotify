@@ -1,3 +1,6 @@
+import { UploadLimitHint } from "@/components/UploadLimitHint";
+import { uploadErrorMessage } from "@/utils/upload";
+import { useNavigate } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,10 +9,12 @@ import { Label } from "@/components/ui/label";
 import { authService } from "@/services/authService";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { setProfile } from "@/stores/actions/authActions";
+import { logout, setProfile } from "@/stores/actions/authActions";
+import { mediaUrl } from "@/utils/media";
 
 const AdminProfile = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [preview, setPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -22,11 +27,7 @@ const AdminProfile = () => {
   useEffect(() => {
     if (user) {
       setName(user.name || "");
-      setPreview(
-        user.avatar?.startsWith("http")
-          ? user.avatar
-          : `${import.meta.env.VITE_SERVER_API}${user.avatar}`
-      );
+      setPreview(mediaUrl(user.avatar));
     }
   }, [user]);
 
@@ -49,21 +50,22 @@ const AdminProfile = () => {
 
     try {
       const res = await authService.updateProfile(user.id, formData);
+      if (password) {
+        await dispatch(logout() as any);
+        navigate("/login", { replace: true });
+        toast.success("Đã đổi mật khẩu. Vui lòng đăng nhập lại.");
+        return;
+      }
 
       toast.success("Cập nhật thành công!");
       dispatch(setProfile(res.data) as any);
-
-    } catch (err: any) {
-      toast.error(err.response?.data?.message || "Có lỗi xảy ra");
+    } catch (err) {
+      toast.error(uploadErrorMessage(err, "Có lỗi xảy ra"));
     }
   };
 
   const getAvatar = () => {
-    if (!preview) return "/default-avatar.png";
-    if (preview.startsWith("blob:")) return preview;
-    return preview.startsWith("http")
-      ? preview
-      : `${import.meta.env.VITE_SERVER_API}${preview}`;
+    return mediaUrl(preview);
   };
 
   return (
@@ -97,7 +99,7 @@ const AdminProfile = () => {
 
         <div className="text-gray-600">
           <p className="text-sm">Ảnh đại diện</p>
-          <p className="text-xs opacity-70">Chọn ảnh JPG, PNG (tối đa 3MB)</p>
+          <UploadLimitHint kind="image" />
         </div>
       </div>
 

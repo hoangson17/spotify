@@ -5,16 +5,29 @@ import { albumService } from "@/services/albumService";
 import { artistService } from "@/services/artistService";
 import { playlistService } from "@/services/playlistService";
 
-export const searchAll = (query: string) => async (dispatch: any) => {
+export const searchAll = (query: string, page = 1, limit = 12) => async (dispatch: any) => {
   try {
     dispatch({ type: actionTypes.SEARCH_REQUEST });
 
-    const res = await searchService.search(query);
+    const res = await searchService.search(query, { page, limit });
     // console.log(res);
     
+    const metas = [res.data.tracks.meta, res.data.albums.meta, res.data.artists.meta];
+    const totalPages = Math.max(...metas.map((meta) => meta.totalPages));
     dispatch({
       type: actionTypes.SEARCH_SUCCESS,
-      results: res.data,
+      results: {
+        tracks: res.data.tracks.items,
+        albums: res.data.albums.items,
+        artists: res.data.artists.items,
+      },
+      meta: {
+        ...res.data.tracks.meta,
+        total: metas.reduce((sum, meta) => sum + meta.total, 0),
+        totalPages,
+        hasPreviousPage: page > 1,
+        hasNextPage: page < totalPages,
+      },
     });
   } catch (error: any) {
     dispatch({
@@ -27,16 +40,16 @@ export const searchAll = (query: string) => async (dispatch: any) => {
 export const getDataSearch = () => async (dispatch: any) => {
   try {
     const [tracksRes, albumsRes, artistsRes, playlistsRes] = await Promise.all([
-      trackService.getAllTracks(),
-      albumService.getAllAlbum(),
-      artistService.getAllArtists(),
-      playlistService.getPlaylist()
+      trackService.getAllTracks({ page: 1, limit: 100 }),
+      albumService.getAllAlbum({ page: 1, limit: 100 }),
+      artistService.getAllArtists({ page: 1, limit: 100 }),
+      playlistService.getPlaylist({ page: 1, limit: 100 })
     ]);
 
-    const tracks = tracksRes?.data || [];
-    const albums = albumsRes?.data || [];
-    const artists = artistsRes?.data || [];
-    const playlists = playlistsRes?.data || [];
+    const tracks = tracksRes?.data?.items || [];
+    const albums = albumsRes?.data?.items || [];
+    const artists = artistsRes?.data?.items || [];
+    const playlists = playlistsRes?.data?.items || [];
 
     const suggestions = [
       ...artists.map((a: any) => ({

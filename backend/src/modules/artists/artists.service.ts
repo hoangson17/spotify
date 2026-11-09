@@ -1,10 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { join } from 'path';
 import { Artist } from 'src/entities/artist.entity';
 import { Track } from 'src/entities/track.entity';
-import { Repository } from 'typeorm';
-import * as fs from 'fs';
+import { artistFields } from 'src/utils/catalog-input';
+import { commitUpload, removeUpload } from 'src/utils/uploads';
+import { In, Repository } from 'typeorm';
+import {
+  paginated,
+  PaginationOptions,
+  paginationOptions,
+} from 'src/utils/pagination';
 
 @Injectable()
 export class ArtistsService {
@@ -13,13 +22,19 @@ export class ArtistsService {
     @InjectRepository(Track) private trackRepository: Repository<Track>,
   ) {}
 
-  async findAll() {
-    return await this.artistRepository.find({
-      relations: ['albums', 'tracks'],
-    });
+  async findAll(options: PaginationOptions = paginationOptions()) {
+    return paginated(
+      await this.artistRepository.findAndCount({
+        relations: ['albums', 'tracks'],
+        order: { name: 'ASC' },
+        skip: options.skip,
+        take: options.limit,
+      }),
+      options,
+    );
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     return await this.artistRepository.findOne({
       where: { id },
       relations: ['albums', 'tracks'],
@@ -27,81 +42,86 @@ export class ArtistsService {
   }
 
   async create(data: any, image?: Express.Multer.File) {
-    if(image){ 
-      if(image.mimetype.startsWith('image/')) data.avatar = `/uploads/images/${image.filename}`
+    data = artistFields(data, true);
+    if (image) {
+      if (image.mimetype.startsWith('image/'))
+        data.avatar = `/uploads/images/${image.filename}`;
       else throw new Error('Invalid file type');
     }
-    return await this.artistRepository.save(data);
+    const saved = await this.artistRepository.save(data);
+    commitUpload(image);
+    return saved;
   }
 
-  async update(id: number, data: any, image?: Express.Multer.File) {
+  async update(id: string, data: any, image?: Express.Multer.File) {
+    data = artistFields(data);
     const artist = await this.artistRepository.findOne({ where: { id } });
     if (!artist) throw new NotFoundException('Artist not found');
-    if(image){
-      if(artist.avatar){
-        try{
-          const oldFileName = artist.avatar.split('/uploads/')[1];
-          const oldFilePath = join(process.cwd(), `uploads`, oldFileName);
-          if(fs.existsSync(oldFilePath)){
-            fs.unlinkSync(oldFilePath);
-            console.log('file deleted', oldFilePath);
-          }
-        }catch(err){
-          console.warn("lỗi xóa ảnh cũ", err);
-        }
-      }
-      if(image.mimetype.startsWith('image/')) data.avatar = `/uploads/images/${image.filename}`
+    if (image) {
+      if (image.mimetype.startsWith('image/'))
+        data.avatar = `/uploads/images/${image.filename}`;
       else throw new Error('Invalid file type');
     }
     await this.artistRepository.update(id, data);
+    commitUpload(image);
+    if (image) await removeUpload(artist.avatar);
     return this.findOne(id);
   }
 
-  async delete(id: number) {
+  async delete(id: string) {
     return await this.artistRepository.delete(id);
   }
 
   async createMany(data: Partial<Artist>[]) {
-    const artists = this.artistRepository.create(data);
+    if (!Array.isArray(data) || data.length > 100)
+      throw new BadRequestException('Invalid artist list');
+    const artists = this.artistRepository.create(
+      data.map((item) => artistFields(item, true)),
+    );
     return await this.artistRepository.save(artists);
   }
 
-async addTracks(artistId: number, trackIds: number[]) {
-  const artist = await this.artistRepository.findOne({
-    where: { id: artistId },
-    relations: ['tracks'],
-  });
-  if (!artist) throw new NotFoundException('Không tìm thấy ca sĩ');
+  async addTracks(artistId: string, trackIds: string[]) {
+    const artist = await this.artistRepository.findOne({
+      where: { id: artistId },
+      relations: ['tracks'],
+    });
+    if (!artist) throw new NotFoundException('Không tìm thấy ca sĩ');
 
-  const tracks = await this.trackRepository.findByIds(trackIds);
-  if (!tracks.length) throw new NotFoundException('Không có bài hát cần tìm');
+    const tracks = await this.trackRepository.find({
+      where: { id: In(trackIds) },
+    });
+    if (!tracks.length) throw new NotFoundException('Không có bài hát cần tìm');
 
-  const newTracks = tracks.filter(
-    (track) => !artist.tracks.some((t) => t.id === track.id),
-  );
+    const newTracks = tracks.filter(
+      (track) => !artist.tracks.some((t) => t.id === track.id),
+    );
 
-  artist.tracks.push(...newTracks);
+    artist.tracks.push(...newTracks);
 
-  return await this.artistRepository.save(artist);
-}
+    return await this.artistRepository.save(artist);
+  }
 
-async syncTracks(artistId: number, trackIds: number[]){
-  const artist = await this.artistRepository.findOne({
-    where: { id: artistId },
-    relations: ['tracks'],
-  });
+  async syncTracks(artistId: string, trackIds: string[]) {
+    const artist = await this.artistRepository.findOne({
+      where: { id: artistId },
+      relations: ['tracks'],
+    });
 
-  if (!artist) throw new NotFoundException('Không tìm thấy ca sĩ');
+    if (!artist) throw new NotFoundException('Không tìm thấy ca sĩ');
 
-  const tracks = await this.trackRepository.findByIds(trackIds);
-  if (!tracks.length){ throw new NotFoundException('Không có bài hát cần tìm');}
+    const tracks = await this.trackRepository.find({
+      where: { id: In(trackIds) },
+    });
+    if (!tracks.length) {
+      throw new NotFoundException('Không có bài hát cần tìm');
+    }
 
-  artist.tracks = tracks;
-  return await this.artistRepository.save(artist);
+    artist.tracks = tracks;
+    return await this.artistRepository.save(artist);
+  }
 
-}
-
-  async deleteTracks(artistId: number) {
+  async deleteTracks(artistId: string) {
     const artist = await this.artistRepository.findOne({
       where: { id: artistId },
       relations: ['tracks'],
@@ -110,10 +130,9 @@ async syncTracks(artistId: number, trackIds: number[]){
 
     const dataUpdate = {
       ...artist,
-      tracks:[]
-    }
+      tracks: [],
+    };
 
     return await this.artistRepository.save(dataUpdate);
   }
 }
-

@@ -1,15 +1,15 @@
 import { combineReducers } from "redux";
 import { persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
-import authReducer from "./authReducer";
-import trackReducer from "./trackReducer";
+import actionTypes from "../actions/actionTypes";
+import albumReducer from "./albumReducer";
 import artistReducer from "./artistReducer";
+import authReducer from "./authReducer";
+import likeTrackReducer from "./likeTrackReducer";
 import playerReducer from "./playerReducer";
 import playlistReducer from "./playlistReducer";
-import albumReducer from "./albumReducer";
 import searchReducer from "./searchReducer";
-import actionTypes from "../actions/actionTypes";
-import likeTrackReducer from "./likeTrackReducer";
+import trackReducer from "./trackReducer";
 
 const authPersistConfig = {
   key: "auth",
@@ -28,12 +28,9 @@ const appReducer = combineReducers({
   likedTracks: likeTrackReducer,
 });
 
-const rootReducer = (state:any, action:any) => {
+const rootReducer = (state: any, action: any) => {
   if (action.type === actionTypes.LOGOUT) {
-    state = {...state, auth: { user: null, accessToken: null, refreshToken: null, isAuthenticated: false }};
-    storage.removeItem("persist:auth");
-    storage.removeItem("accessToken");
-    storage.removeItem("refreshToken");
+    state = undefined;
   }
   return appReducer(state, action);
 };

@@ -1,24 +1,34 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation, Link } from "react-router-dom";
+import { queue } from "@/stores/actions/playerActions";
 import { searchAll } from "@/stores/actions/searchActions";
 import { Play } from "lucide-react";
-import { queue } from "@/stores/actions/playerActions";
+import { useEffect } from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { Link,useSearchParams } from "react-router-dom";
 import music from "../../assets/music.jpg";
+import { mediaUrl, useFallbackImage } from "@/utils/media";
+import PaginationControls from "@/components/PaginationControls";
+import { SearchSkeleton } from "@/components/CatalogSkeleton";
 const Search = () => {
   const dispatch = useDispatch();
-  const { results, loading } = useSelector((state: any) => state.search);
-  const query = new URLSearchParams(useLocation().search).get("q") || "";
+  const { results, loading, meta } = useSelector((state: any) => state.search);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") || "";
+  const requestedPage = Number(searchParams.get("page") || 1);
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 
     const handlePlayTrack = (track: any) => dispatch(queue([track]));
   
 
   useEffect(() => {
-    if (query) dispatch(searchAll(query) as any);
-  }, [query]);
+    if (query) dispatch(searchAll(query, page, 12) as any);
+  }, [dispatch, query, page]);
 
-  if (loading)
-    return <div className="text-white p-6 text-xl font-semibold">Searching...</div>;
+  const changePage = (nextPage: number) => {
+    setSearchParams({ q: query, page: String(nextPage) });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  if (loading) return <SearchSkeleton />;
 
   return (
     <div className="p-6 text-white">
@@ -38,7 +48,8 @@ const Search = () => {
                 <div className="flex items-center gap-4">
                   <span className="w-6 text-gray-400 text-right">{index + 1}</span>
                   <img
-                    src={track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
+                    src={mediaUrl(track.image_url, music)}
+                    onError={(event) => useFallbackImage(event, music)}
                     alt={track.title}
                     className="w-12 h-12 rounded object-cover"
                   />
@@ -71,7 +82,8 @@ const Search = () => {
               >
                 <div className="w-24 h-24 rounded-full overflow-hidden relative">
                   <img
-                    src={artist.avatar.startsWith("http") ? artist.avatar : `${import.meta.env.VITE_SERVER_API}${artist.avatar}`}
+                    src={mediaUrl(artist.avatar, music)}
+                    onError={(event) => useFallbackImage(event, music)}
                     alt={artist.name}
                     className="w-full h-full object-cover"
                   />
@@ -99,7 +111,8 @@ const Search = () => {
               >
                 <div className="w-32 h-32 rounded overflow-hidden relative">
                   <img
-                    src={ album.cover_image.startsWith("http") ? album.cover_image : `${import.meta.env.VITE_SERVER_API}${album.cover_image}`}
+                    src={mediaUrl(album.cover_image, music)}
+                    onError={(event) => useFallbackImage(event, music)}
                     alt={album.title}
                     className="w-full h-full object-cover"
                   />
@@ -113,6 +126,7 @@ const Search = () => {
           </div>
         </div>
       )}
+      <PaginationControls meta={meta} onPageChange={changePage} />
     </div>
   );
 };

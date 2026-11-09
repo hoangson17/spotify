@@ -1,9 +1,11 @@
 import actionTypes from "../actions/actionTypes";
+import { emptyPagination } from "../../types/pagination";
 
 const initialState = {
   likedTracks: [] as any,
   loading: false,
   error: null as string | null,
+  meta: emptyPagination,
 };
 
 const likeTrackReducer = (state = initialState, action: any) => {
@@ -12,6 +14,7 @@ const likeTrackReducer = (state = initialState, action: any) => {
       return {
         ...state,
         likedTracks: action.likedTracks,
+        meta: action.meta,
         loading: false,
         error: null,
       };

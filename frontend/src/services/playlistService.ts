@@ -1,11 +1,12 @@
-import  axiosInstance  from "../axiosConfig";
+import axiosInstance from "../axiosConfig";
+import type { PaginationParams } from "@/types/pagination";
 
 export const playlistService = {
-    getPlaylist: async () => {
-        const response = await axiosInstance.get(`/playlist`);
+    getPlaylist: async (params: PaginationParams = {}) => {
+        const response = await axiosInstance.get(`/playlist`, { params });
         return response;
     },
-    getPlaylistById: async (id: number) => {
+    getPlaylistById: async (id: string) => {
         const response = await axiosInstance.get(`/playlist/${id}`);
         return response;
     },
@@ -18,7 +19,7 @@ export const playlistService = {
         });
         return response;
     },
-    updatePlaylist: async (id: number, playlist: any) => {
+    updatePlaylist: async (id: string, playlist: any) => {
         const response = await axiosInstance.patch(`/playlist/${id}`, playlist,{
             headers: {
                 'Content-Type': 'multipart/form-data',
@@ -27,23 +28,23 @@ export const playlistService = {
         });
         return response;
     },
-    deletePlaylist: async (id: number) => {
+    deletePlaylist: async (id: string) => {
         const response = await axiosInstance.delete(`/playlist/${id}`);
         return response;
     },
-    syncTrack: async (userId: number,id: number, trackIds: number[]) => {
+    syncTrack: async (userId: string,id: string, trackIds: string[]) => {
         const response = await axiosInstance.post(`/playlist-track/sync/${userId}`,{ playlistId:id , trackIds });
         return response;
     },
     
-    addTrack: async (userId: number,id: number, trackIds: number[]) => {
+    addTrack: async (userId: string,id: string, trackIds: string[]) => {
         console.log(userId,id,trackIds);
         const response = await axiosInstance.post(`/playlist-track/add/${userId}`, { playlistId:id , trackIds });
         return response;
     },
 
-    removeTrack: async (userId: number,id: number, trackIds: number[]) => {
-        const response = await axiosInstance.patch(`/playlist/${id}/remove/${userId}`, { trackIds });
+    removeTrack: async (userId: string,id: string, trackIds: string[]) => {
+        const response = await axiosInstance.patch(`/playlist-track/remove/${userId}`, { playlistId: id, trackIds });
         return response;
     },
 

@@ -1,148 +1,150 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Track } from 'src/entities/track.entity';
-import { Album } from 'src/entities/album.entity';
+import { Artist } from 'src/entities/artist.entity';
+import { Category } from 'src/entities/category.entity';
+import { trackFields } from 'src/utils/catalog-input';
+import { commitUpload, removeUpload } from 'src/utils/uploads';
 import { ILike, Repository } from 'typeorm';
-import { join } from 'path';
-import * as fs from 'fs';
-import mp3Duration from 'mp3-duration';
-
+import {
+  paginated,
+  PaginationOptions,
+  paginationOptions,
+} from 'src/utils/pagination';
 
 @Injectable()
 export class TrackService {
   constructor(
-    @InjectRepository(Track)
-    private trackRepository: Repository<Track>,
-
-    @InjectRepository(Album)
-    private albumRepository: Repository<Album>,
+    @InjectRepository(Track) private trackRepository: Repository<Track>,
+    @InjectRepository(Artist) private artistRepository: Repository<Artist>,
+    @InjectRepository(Category)
+    private categoryRepository: Repository<Category>,
   ) {}
 
-  async findAll() {
-    return await this.trackRepository.find({
-      relations: ['album', 'artists'],
-      order: { created_at: 'DESC' },
-    });
+  async findAll(
+    options: PaginationOptions = paginationOptions(),
+    categoryId?: string,
+  ) {
+    return paginated(
+      await this.trackRepository.findAndCount({
+        where: categoryId ? { category: { id: categoryId } } : undefined,
+        relations: ['album', 'artists', 'category'],
+        order: { created_at: 'DESC' },
+        skip: options.skip,
+        take: options.limit,
+      }),
+      options,
+    );
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     const track = await this.trackRepository.findOne({
       where: { id },
-      relations: ['album', 'artists'],
+      relations: ['album', 'artists', 'category'],
     });
     if (!track) throw new NotFoundException('Track not found');
     return track;
   }
 
+  private async media(
+    image?: Express.Multer.File,
+    audio?: Express.Multer.File,
+  ) {
+    const data: Partial<Track> = {};
+    if (image) data.image_url = `/uploads/images/${image.filename}`;
+    if (audio) {
+      data.audio_url = `/uploads/audio/${audio.filename}`;
+    }
+    return data;
+  }
+
   async create(
-  data: any,
-  image?: Express.Multer.File,
-  audio?: Express.Multer.File,
-) {
-  if (image) {
-    if (!image.mimetype.startsWith('image/')) throw new Error('Invalid file type');
-    data.image = `/uploads/images/${image.filename}`;
+    body: unknown,
+    image?: Express.Multer.File,
+    audio?: Express.Multer.File,
+  ) {
+    const data = trackFields(body, true);
+    await Promise.all([this.validateArtist(data), this.validateCategory(data)]);
+    if (!audio) throw new BadRequestException('Audio file is required');
+    const media = await this.media(image, audio);
+    const saved = await this.trackRepository.save(
+      this.trackRepository.create({ ...data, ...media }),
+    );
+    commitUpload(image);
+    commitUpload(audio);
+    return saved;
   }
 
-  if (audio) {
-    if (!audio.mimetype.startsWith('audio/')) throw new Error('Invalid file type');
-    data.audio = `/uploads/audio/${audio.filename}`;
-
-    // Lấy duration
-    const audioPath = join(process.cwd(), 'uploads', 'audio', audio.filename);
-    const duration = await new Promise<number>((resolve, reject) => {
-      mp3Duration(audioPath, (err, duration) => {
-        if (err) reject(err);
-        else resolve(duration);
-      });
-    });
-    data.duration = duration; // lưu duration vào db
-  }
-
-  const newTrack = this.trackRepository.create({
-    ...data,
-    image_url: data.image,
-    audio_url: data.audio,
-    duration: data.duration, // thêm trường duration
-  });
-
-  return await this.trackRepository.save(newTrack);
-}
-
-async update(
-  id: number,
-  data: any,
-  image?: Express.Multer.File,
-  audio?: Express.Multer.File,
-) {
-  const track = await this.trackRepository.findOne({ where: { id } });
-  if (!track) throw new NotFoundException('Track not found');
-
-  if (image) {
-    if (!image.mimetype.startsWith('image/')) {
-      throw new Error('Invalid file type for image');
-    }
-
-    if (track.image_url) {
-      const oldImagePath = join(
-        process.cwd(),
-        track.image_url.replace('/uploads/', 'uploads/')
-      );
-      if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
-    }
-
-    data.image_url = `/uploads/images/${image.filename}`;
-  }
-
-  if (audio) {
-    if (!audio.mimetype.startsWith('audio/')) {
-      throw new Error('Invalid file type for audio');
-    }
-
-    if (track.audio_url) {
-      const oldAudioPath = join(
-        process.cwd(),
-        track.audio_url.replace('/uploads/', 'uploads/')
-      );
-      if (fs.existsSync(oldAudioPath)) fs.unlinkSync(oldAudioPath);
-    }
-
-    data.audio_url = `/uploads/audio/${audio.filename}`;
-
-    const audioPath = join(process.cwd(), 'uploads', 'audio', audio.filename);
-
-    const duration = await new Promise<number>((resolve, reject) => {
-      mp3Duration(audioPath, (err, duration) => {
-        if (err) reject(err);
-        else resolve(duration);
-      });
-    });
-
-    data.duration = duration;
-  }
-
-
-  const updatedTrack = {
-    ...track, 
-    ...data, 
-  };
-
-  return await this.trackRepository.save(updatedTrack);
-}
-
-
-  async delete(id: number) {
+  async update(
+    id: string,
+    body: unknown,
+    image?: Express.Multer.File,
+    audio?: Express.Multer.File,
+  ) {
+    const data = trackFields(body);
+    await Promise.all([this.validateArtist(data), this.validateCategory(data)]);
     const track = await this.findOne(id);
-    return await this.trackRepository.remove(track);
+    const oldImage = track.image_url;
+    const oldAudio = track.audio_url;
+    Object.assign(track, data, await this.media(image, audio));
+    const saved = await this.trackRepository.save(track);
+    commitUpload(image);
+    commitUpload(audio);
+    if (image) await removeUpload(oldImage);
+    if (audio) await removeUpload(oldAudio);
+    return saved;
   }
 
+  async delete(id: string) {
+    const track = await this.findOne(id);
+    await this.trackRepository.remove(track);
+    await Promise.all([
+      removeUpload(track.image_url),
+      removeUpload(track.audio_url),
+    ]);
+    return { success: true };
+  }
 
-  async search(keyword: string) {
-    if (!keyword || keyword.trim() === '') return [];
-    return this.trackRepository.find({
-      where: { title: ILike(`%${keyword}%`) },
-      // relations: ['artist'],
-      // take: 20, //số lượng bản ghi
-    });
+  async search(
+    keyword: string,
+    options: PaginationOptions = paginationOptions(),
+  ) {
+    if (!keyword?.trim()) return paginated([[], 0], options);
+    return paginated(
+      await this.trackRepository.findAndCount({
+        where: { title: ILike(`%${keyword.trim().slice(0, 100)}%`) },
+        relations: ['artists', 'category'],
+        order: { created_at: 'DESC' },
+        skip: options.skip,
+        take: options.limit,
+      }),
+      options,
+    );
+  }
+
+  private async validateArtist(data: any) {
+    if (
+      data.artists?.length &&
+      !(await this.artistRepository.findOne({
+        where: { id: data.artists[0].id },
+      }))
+    ) {
+      throw new NotFoundException('Artist not found');
+    }
+  }
+
+  private async validateCategory(data: any) {
+    if (
+      data.category &&
+      !(await this.categoryRepository.findOne({
+        where: { id: data.category.id },
+      }))
+    ) {
+      throw new NotFoundException('Category not found');
+    }
   }
 }

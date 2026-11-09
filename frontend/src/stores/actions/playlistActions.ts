@@ -1,14 +1,16 @@
 import actionTypes from "./actionTypes";
 import { playlistService } from "../../services/playlistService";
 
-export const getPlaylist = () => async (dispatch: any) => {    
+export const getPlaylist = (page = 1, limit = 12) => async (dispatch: any) => {
+    dispatch({ type: actionTypes.GET_PLAYLIST_REQUEST });
     try {
-        const response = await playlistService.getPlaylist();
+        const response = await playlistService.getPlaylist({ page, limit });
         // console.log( response );
         if (response?.status === 200) {
             dispatch({
                 type: actionTypes.GET_PLAYLIST_SUCCESS,
-                playlist: response.data, 
+                playlist: response.data.items,
+                meta: response.data.meta,
             });
         } else {
             dispatch({
@@ -24,7 +26,8 @@ export const getPlaylist = () => async (dispatch: any) => {
     }
 };
 
-export const getPlaylistById = (id: number) => async (dispatch: any) => {    
+export const getPlaylistById = (id: string) => async (dispatch: any) => {
+    dispatch({ type: actionTypes.GET_PLAYLIST_ID_REQUEST });
     try {
         const response = await playlistService.getPlaylistById(id);
         // console.log( response );
@@ -57,14 +60,14 @@ export const updatePlaylist = (updatedPlaylist: any) => ({
   payload: updatedPlaylist ,
 });
 
-export const deletePlaylist = (id: number) => ({
+export const deletePlaylist = (id: string) => ({
   type: actionTypes.DELETE_PLAYLIST,
   payload: id,
 });
 
 
 
-export const addTrackToPlaylist = (userId: number,playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+export const addTrackToPlaylist = (userId: string,playlistId: string, trackIds: string[]) => async (dispatch: any) => {
   try {
     const res = await playlistService.addTrack(userId,playlistId, trackIds);
     if (res.status === 200) {
@@ -81,7 +84,7 @@ export const addTrackToPlaylist = (userId: number,playlistId: number, trackIds: 
 };
 
 // Xóa track khỏi playlist
-export const removeTrackFromPlaylist = (userId: number,playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+export const removeTrackFromPlaylist = (userId: string,playlistId: string, trackIds: string[]) => async (dispatch: any) => {
   try {
     const res = await playlistService.removeTrack(userId,playlistId, trackIds);
     if (res.status === 200) {
@@ -98,7 +101,7 @@ export const removeTrackFromPlaylist = (userId: number,playlistId: number, track
 };
 
 // Đồng bộ toàn bộ track của playlist
-export const syncPlaylistTracks = (userId: number,playlistId: number, trackIds: number[]) => async (dispatch: any) => {
+export const syncPlaylistTracks = (userId: string,playlistId: string, trackIds: string[]) => async (dispatch: any) => {
   try {
     const res = await playlistService.syncTrack(userId,playlistId, trackIds);
     if (res.status === 200) {

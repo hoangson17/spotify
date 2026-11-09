@@ -5,6 +5,7 @@ const initialState = {
   results: null,
   loading: false,
   error: null,
+  meta: null,
 };
 
 const searchReducer = (state = initialState, action: any) => {  
@@ -19,7 +20,12 @@ const searchReducer = (state = initialState, action: any) => {
       return { ...state, loading: false, error: action.error };
 
     case actionTypes.SEARCH_SUCCESS:
-      return { ...state, loading: false, results: action.results };
+      return {
+        ...state,
+        loading: false,
+        results: action.results,
+        meta: action.meta,
+      };
 
     case actionTypes.SEARCH_FAIL:
       return { ...state, loading: false, error: action.error };

@@ -1,17 +1,20 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useParams, useLocation, Link } from "react-router-dom";
 import { getArtistById } from "@/stores/actions/artistActions";
-import { Play, Heart, MoreHorizontal } from "lucide-react";
-import { queue, setCurrentSong } from "@/stores/actions/playerActions";
+import { queue } from "@/stores/actions/playerActions";
+import { Heart,MoreHorizontal,Play } from "lucide-react";
+import { useEffect } from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { Link,useLocation,useParams } from "react-router-dom";
 import music from "../../assets/music.jpg";
+import { Footer } from "@/components";
+import { mediaUrl, useFallbackImage } from "@/utils/media";
+import { DetailSkeleton } from "@/components/CatalogSkeleton";
 
 const Artist = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
   const location = useLocation();
 
-  const { artists } = useSelector((state: any) => state.artists);
+  const { artists, loading } = useSelector((state: any) => state.artists);
     
   const handlePlayTrack = (track: any) => dispatch(queue([track]));
 
@@ -22,8 +25,12 @@ const Artist = () => {
   };
 
   useEffect(() => {
-    if (id) dispatch(getArtistById(Number(id)) as any);
+    if (id) dispatch(getArtistById(id) as any);
   }, [id, location.pathname]);
+
+  if (loading || !artists || Array.isArray(artists)) {
+    return <DetailSkeleton round />;
+  }
 
   return (
     <div className="relative text-white">
@@ -32,14 +39,8 @@ const Artist = () => {
           {/* HEADER */}
           <div className="p-8 flex gap-6 items-end bg-gradient-to-b from-[#202020] to-transparent">
             <img
-              src={
-                artists.avatar
-                  ? (artists.avatar.startsWith("http")
-                      ? artists.avatar
-                      : `${import.meta.env.VITE_SERVER_API}${artists.avatar}`
-                    )
-                  : music
-              }
+              src={mediaUrl(artists.avatar, music)}
+              onError={(event) => useFallbackImage(event, music)}
               alt=""
               className="w-48 h-48 rounded-full object-cover shadow-xl"
             />
@@ -81,7 +82,7 @@ const Artist = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                <img src={track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music} className="w-12 h-12 rounded object-cover" />
+                <img src={mediaUrl(track.image_url, music)} onError={(event) => useFallbackImage(event, music)} className="w-12 h-12 rounded object-cover" />
                 <span className="text-sm font-medium">{track.title}</span>
               </div>
 
@@ -102,7 +103,8 @@ const Artist = () => {
                 className="group cursor-pointer hover:bg-white/10 p-3 rounded-lg transition"
               >
                 <img
-                  src={ album.cover_image.startsWith("http") ? album.cover_image : `${import.meta.env.VITE_SERVER_API}${album.cover_image}`}
+                  src={mediaUrl(album.cover_image, music)}
+                  onError={(event) => useFallbackImage(event, music)}
                   className="w-full h-44 object-cover rounded-lg shadow"
                 />
                 <p className="font-medium mt-3">{album.title}</p>
@@ -112,6 +114,7 @@ const Artist = () => {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 };

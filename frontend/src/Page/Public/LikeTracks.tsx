@@ -1,17 +1,25 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
-import { Play, Heart, MoreHorizontal } from "lucide-react";
-import { queue, setCurrentSong } from "@/stores/actions/playerActions";
+import { queue } from "@/stores/actions/playerActions";
+import { getLikeTracks } from "@/stores/actions/likeTracksAction";
+import { Heart,MoreHorizontal,Play } from "lucide-react";
+import { useEffect } from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { Link, useSearchParams } from "react-router-dom";
 import music from "../../assets/music.jpg";
 import none from "../../assets/none.png";
+import { mediaUrl, useFallbackImage } from "@/utils/media";
+import PaginationControls from "@/components/PaginationControls";
 
 const LikeTrack = () => {
   const dispatch = useDispatch();
-  const { likedTracks } = useSelector((state: any) => state.likedTracks);
+  const { likedTracks, meta } = useSelector((state: any) => state.likedTracks);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedPage = Number(searchParams.get("page") || 1);
+  const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const auth = localStorage.getItem("persist:auth");
   const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
-  console.log(user);
+  useEffect(() => {
+    if (user?.id) dispatch(getLikeTracks(user.id, page, 20) as any);
+  }, [dispatch, user?.id, page]);
   
   
   const handlePlayTrack = (track: any) => dispatch(queue([track]));
@@ -32,14 +40,15 @@ const LikeTrack = () => {
       {/* HEADER */}
       <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
         <img
-          src={`${import.meta.env.VITE_SERVER_API}${user?.avatar}` || none }
-          alt={user.name}
+          src={mediaUrl(user?.avatar, none)}
+          onError={(event) => useFallbackImage(event, none)}
+          alt={user?.name || "User"}
           className="w-48 h-48 rounded shadow-lg object-cover"
         />
 
         <div>
           <p className="text-sm text-gray-300 font-semibold">likedTracks</p>
-          <h1 className="text-6xl font-bold mt-2">{user.name}</h1>
+          <h1 className="text-6xl font-bold mt-2">{user?.name}</h1>
           <p className="mt-3 text-gray-300 text-sm">
              {likedTracks?.length} Tracks
           </p>
@@ -77,7 +86,7 @@ const LikeTrack = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <img src={track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music } className="w-10 h-10 rounded object-cover" />
+            <img src={mediaUrl(track.image_url, music)} onError={(event) => useFallbackImage(event, music)} className="w-10 h-10 rounded object-cover" />
             <p className="font-medium">{track.title}</p>
           </div>
 
@@ -86,6 +95,12 @@ const LikeTrack = () => {
         </div>
       ))}
 
+      <PaginationControls
+        meta={meta}
+        onPageChange={(nextPage) => setSearchParams({ page: String(nextPage) })}
+        className="text-white"
+      />
+
       {likedTracks.artist && (
         <div className="p-6 border-t border-white/10 mt-6">
           <Link
@@ -93,7 +108,8 @@ const LikeTrack = () => {
             className="group cursor-pointer hover:bg-white/10 p-3 rounded-lg transition inline-block"
           >
             <img
-              src={likedTracks.artist.avatar}
+              src={mediaUrl(likedTracks.artist?.avatar, none)}
+              onError={(event) => useFallbackImage(event, none)}
               className="w-44 h-44 object-cover rounded-lg shadow"
             />
             <p className="font-medium mt-3">{likedTracks.artist.name}</p>

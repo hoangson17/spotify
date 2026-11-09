@@ -1,12 +1,8 @@
 "use client";
+import { isAdmin } from "@/utils/roles";
 
-import React, { useState, useEffect, useRef } from "react";
-import icons from "../utils/icons";
-import { Button } from "./ui/button";
-import { InputCustom } from "./InputCustom";
-import noneAvatar from "../assets/none.png";
-import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { logout } from "@/stores/actions/authActions";
+import { getDataSearch } from "@/stores/actions/searchActions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,12 +10,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-import { FileUser, LogOut, Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 import { FaGrinStars } from "react-icons/fa";
-import actionTypes from "@/stores/actions/actionTypes";
-import { getDataSearch } from "@/stores/actions/searchActions";
-import { jwtDecode } from "jwt-decode";
-import { logout } from "@/stores/actions/authActions";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
+import noneAvatar from "../assets/none.png";
+import icons from "../utils/icons";
+import { InputCustom } from "./InputCustom";
+import { Button } from "./ui/button";
+import { mediaUrl, useFallbackImage } from "../utils/media";
 
 const {
   FaSpotify,
@@ -40,18 +40,7 @@ const Header: React.FC = () => {
   const searchRef = useRef<HTMLDivElement>(null);
   const { searchAll } = useSelector((state: any) => state.search);
 
-  const token = localStorage.getItem("accessToken");
-
-  let role = null;
-
-  try {
-    if (token) {
-      const decoded: any = jwtDecode(token);
-      role = decoded?.role;
-    }
-  } catch (err) {
-    role = null; // token lỗi
-  }
+  const role = auth.user?.role;
 
   // console.log(searchAll);
   useEffect(() => {
@@ -75,7 +64,7 @@ const Header: React.FC = () => {
       setFilteredSuggestions([]);
     } else {
       const filtered = searchAll.filter((s: any) =>
-        s.name.toLowerCase().includes(value.toLowerCase())
+        s.name.toLowerCase().includes(value.toLowerCase()),
       );
       setFilteredSuggestions(filtered);
     }
@@ -93,7 +82,7 @@ const Header: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    dispatch(logout() as any); 
+    dispatch(logout() as any);
   };
 
   return (
@@ -132,8 +121,12 @@ const Header: React.FC = () => {
             autoCorrect="off"
           />
           <Button
+            type="button"
             variant="ghost"
             className="text-white rounded-full h-[36px] w-[36px] hover:bg-[#2a2a2a] transition"
+            onClick={() => navigate("/browse/categories")}
+            aria-label="Duyệt tất cả thể loại"
+            title="Duyệt tất cả thể loại"
           >
             <IoFileTrayFullOutline size={18} />
           </Button>
@@ -194,11 +187,8 @@ const Header: React.FC = () => {
               <DropdownMenuTrigger asChild>
                 <img
                   className="w-10 h-10 rounded-full object-cover cursor-pointer ring-2 ring-blue-500 hover:ring-blue-400 transition"
-                  src={ auth.user?.avatar &&
-                    auth?.user?.avatar.includes("/uploads/")
-                      ? `${import.meta.env.VITE_SERVER_API}${auth.user.avatar}`
-                      : auth.user.avatar || noneAvatar
-                  }
+                  src={mediaUrl(auth.user?.avatar, noneAvatar)}
+                  onError={(event) => useFallbackImage(event, noneAvatar)}
                   alt="User avatar"
                 />
               </DropdownMenuTrigger>
@@ -210,18 +200,18 @@ const Header: React.FC = () => {
                 </DropdownMenuItem> */}
 
                 <Link to="/profile">
-                <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
-                  <div className="flex items-center gap-2">
+                  <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
+                    <div className="flex items-center gap-2">
                       <Settings className="text-lg" /> Profile
                     </div>
-                </DropdownMenuItem>
-                </Link>
-                {role === "admin" && (
-                <Link to="/admin">
-                  <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
-                    <GrGroup className="text-lg" /> Admin Dashboard
                   </DropdownMenuItem>
                 </Link>
+                {isAdmin(role) && (
+                  <Link to="/admin">
+                    <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">
+                      <GrGroup className="text-lg" /> Admin Dashboard
+                    </DropdownMenuItem>
+                  </Link>
                 )}
 
                 <DropdownMenuItem className="flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-700 cursor-pointer">

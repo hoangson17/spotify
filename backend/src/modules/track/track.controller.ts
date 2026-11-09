@@ -1,3 +1,5 @@
+import { RequirePermissions } from 'src/utils/permissions';
+import { UploadSizeInterceptor } from 'src/interceptors/upload-size.interceptor';
 import {
   Body,
   Controller,
@@ -20,28 +22,44 @@ import {
 import { multerConfig } from 'src/config/multer.config';
 import { RoleGuard } from 'src/guards/role/role.guard';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
+import { paginationOptions } from 'src/utils/pagination';
+import { CreateTrackDto } from './dto/create-track.dto';
+import { UpdateTrackDto } from './dto/update-track.dto';
+import { entityId } from 'src/utils/input';
 
 @Controller('track')
 export class TrackController {
   constructor(private readonly trackService: TrackService) {}
 
   @Get()
-  findAll() {
-    return this.trackService.findAll();
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('categoryId') categoryId?: string,
+  ) {
+    const options = paginationOptions(page, limit);
+    return categoryId
+      ? this.trackService.findAll(options, entityId(categoryId))
+      : this.trackService.findAll(options);
   }
 
   @Get('search')
-  search(@Query('keyword') keyword: string) {
-    return this.trackService.search(keyword);
+  search(
+    @Query('keyword') keyword: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.trackService.search(keyword, paginationOptions(page, limit));
   }
 
   @Get(':id')
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id') id: string) {
     return this.trackService.findOne(id);
   }
 
   @UseGuards(RoleGuard)
   @Post()
+  @RequirePermissions('tracks:create')
   @UseInterceptors(
     FileFieldsInterceptor(
       [
@@ -50,9 +68,10 @@ export class TrackController {
       ],
       multerConfig,
     ),
+    UploadSizeInterceptor,
   )
   create(
-    @Body() data: any,
+    @Body() data: CreateTrackDto,
     @UploadedFiles()
     files: { audio?: Express.Multer.File[]; image?: Express.Multer.File[] },
   ) {
@@ -63,24 +82,35 @@ export class TrackController {
 
   @UseGuards(RoleGuard)
   @Patch(':id')
+  @RequirePermissions('tracks:update')
   @UseInterceptors(
     FileFieldsInterceptor(
       [
         { name: 'audio', maxCount: 1 },
         { name: 'image', maxCount: 1 },
       ],
-      multerConfig, 
+      multerConfig,
     ),
+    UploadSizeInterceptor,
   )
-  update(@Param('id') id: number, @Body() data: any, @UploadedFiles()
+  update(
+    @Param('id') id: string,
+    @Body() data: UpdateTrackDto,
+    @UploadedFiles()
     files: { audio?: Express.Multer.File[]; image?: Express.Multer.File[] },
   ) {
-    return this.trackService.update(id, data, files.image?.[0], files.audio?.[0]);
+    return this.trackService.update(
+      id,
+      data,
+      files.image?.[0],
+      files.audio?.[0],
+    );
   }
 
   @UseGuards(RoleGuard)
   @Delete(':id')
-  delete(@Param('id') id: number) {
+  @RequirePermissions('tracks:delete')
+  delete(@Param('id') id: string) {
     return this.trackService.delete(id);
   }
 }

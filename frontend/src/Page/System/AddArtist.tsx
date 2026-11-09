@@ -1,6 +1,7 @@
-import { getArtist } from "@/stores/actions/artistActions";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { uploadErrorMessage } from "@/utils/upload";
+import { Can } from "@/components/Can";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -9,46 +10,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { artistService } from "@/services/artistService";
+import { getArtist } from "@/stores/actions/artistActions";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
+import { mediaUrl } from "@/utils/media";
 
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
 import { getTracks } from "@/stores/actions/trackActions";
+import PaginationControls from "@/components/PaginationControls";
 
 const AddArtist = () => {
   const dispatch = useDispatch();
   const data = useSelector((state: any) => state.artists.artists || []);
-  const tracksData = useSelector((state: any) => state.tracks.tracks || []);
+  const meta = useSelector((state: any) => state.artists.meta);
 
   const [openModal, setOpenModal] = useState(false);
+  const [page, setPage] = useState(1);
   const [isEdit, setIsEdit] = useState(false);
-  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState<File | null>(null);
   const [bio, setBio] = useState("");
 
   useEffect(() => {
-    dispatch(getArtist() as any);
-    dispatch(getTracks() as any);
-  }, [dispatch]);
+    dispatch(getArtist(page, 20) as any);
+    dispatch(getTracks(1, 100) as any);
+  }, [dispatch, page]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await artistService.removeArtist(id);
-      dispatch(getArtist() as any);
+      dispatch(getArtist(page, 20) as any);
       toast.success("Xoá artist thành công!");
     } catch (error) {
-      toast.error("Không thể xoá artist.");
+      toast.error(uploadErrorMessage(error, "Không thể xoá artist."));
     }
   };
 
@@ -75,7 +80,7 @@ const AddArtist = () => {
       const formData = new FormData();
       formData.append("name", name);
       formData.append("bio", bio);
-      
+
       if (avatar) formData.append("avatar", avatar);
 
       if (isEdit && currentId) {
@@ -86,10 +91,12 @@ const AddArtist = () => {
         toast.success("Tạo artist thành công!");
       }
 
-      dispatch(getArtist() as any);
+      dispatch(getArtist(page, 20) as any);
       setOpenModal(false);
     } catch (error) {
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      toast.error(
+        uploadErrorMessage(error, "Có lỗi xảy ra. Vui lòng thử lại.")
+      );
     }
   };
 
@@ -99,7 +106,9 @@ const AddArtist = () => {
       <div className="w-full mb-3 flex justify-between">
         {" "}
         <h2 className="text-xl font-semibold">Danh sách Artists</h2>{" "}
-        <Button onClick={handleOpenCreate}>Add Artist +</Button>{" "}
+        <Can permission="artists:create">
+          <Button onClick={handleOpenCreate}>Add Artist +</Button>
+        </Can>{" "}
       </div>
       <div className="rounded-xl border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -125,11 +134,7 @@ const AddArtist = () => {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarImage
-                            src={
-                              item.avatar?.startsWith("http")
-                                ? item.avatar
-                                : `${import.meta.env.VITE_SERVER_API}${item.avatar}`
-                            }
+                            src={mediaUrl(item.avatar)}
                           />
                           <AvatarFallback>
                             {item.name?.charAt(0) || "A"}
@@ -142,20 +147,24 @@ const AddArtist = () => {
                     <TableCell>{item.tracks?.length || 0}</TableCell>
                     <TableCell>
                       <div className="flex justify-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenEdit(item)}
-                        >
-                          Update
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          Delete
-                        </Button>
+                        <Can permission="artists:update">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenEdit(item)}
+                          >
+                            Update
+                          </Button>
+                        </Can>
+                        <Can permission="artists:delete">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            Delete
+                          </Button>
+                        </Can>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -171,6 +180,7 @@ const AddArtist = () => {
           </Table>
         </div>
       </div>
+      <PaginationControls meta={meta} onPageChange={setPage} />
       {/* Dialog */}
       <Dialog open={openModal} onOpenChange={setOpenModal}>
         <DialogContent>
@@ -200,9 +210,11 @@ const AddArtist = () => {
             <Button variant="outline" onClick={() => setOpenModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>
-              {isEdit ? "Update" : "Create"}
-            </Button>
+            <Can permission={isEdit ? "artists:update" : "artists:create"}>
+              <Button onClick={handleSubmit}>
+                {isEdit ? "Update" : "Create"}
+              </Button>
+            </Can>
           </DialogFooter>
         </DialogContent>
       </Dialog>

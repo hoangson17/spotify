@@ -7,7 +7,9 @@ describe('PlaylistService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [PlaylistService],
-    }).compile();
+    })
+      .useMocker(() => ({}))
+      .compile();
 
     service = module.get<PlaylistService>(PlaylistService);
   });

@@ -1,7 +1,15 @@
-import { getPlaylist } from "@/stores/actions/playlistActions";
-import { getTracks } from "@/stores/actions/trackActions";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { uploadErrorMessage } from "@/utils/upload";
+import { Can } from "@/components/Can";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -10,37 +18,35 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { playlistService } from "@/services/playlistService";
+import { getPlaylist } from "@/stores/actions/playlistActions";
+import { getTracks } from "@/stores/actions/trackActions";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { mediaUrl } from "@/utils/media";
+import PaginationControls from "@/components/PaginationControls";
 
 const AddPlayList = () => {
   const dispatch = useDispatch();
   const data = useSelector((state: any) => state.playlist.playlist || []);
+  const meta = useSelector((state: any) => state.playlist.meta);
   const tracksData = useSelector((state: any) => state.tracks.tracks || []);
   const user = useSelector((state: any) => state.auth.user);
 
   const [openModal, setOpenModal] = useState(false);
+  const [page, setPage] = useState(1);
   const [isEdit, setIsEdit] = useState(false);
-  const [currentId, setCurrentId] = useState<number | null>(null);
+  const [currentId, setCurrentId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [selectedTracks, setSelectedTracks] = useState<number[]>([]);
+  const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
 
   useEffect(() => {
-    dispatch(getPlaylist() as any);
-    dispatch(getTracks() as any);
-  }, [dispatch]);
+    dispatch(getPlaylist(page, 20) as any);
+    dispatch(getTracks(1, 100) as any);
+  }, [dispatch, page]);
 
   const handleOpenCreate = () => {
     setIsEdit(false);
@@ -62,17 +68,17 @@ const AddPlayList = () => {
     setOpenModal(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
       await playlistService.deletePlaylist(id);
-      dispatch(getPlaylist() as any);
+      dispatch(getPlaylist(page, 20) as any);
       toast.success("Xóa thành công");
     } catch (error) {
-      toast.error("Xóa thất bại");
+      toast.error(uploadErrorMessage(error, "Xóa thất bại"));
     }
   };
 
-  const handleTrackToggle = (trackId: number) => {
+  const handleTrackToggle = (trackId: string) => {
     setSelectedTracks((prev) =>
       prev.includes(trackId)
         ? prev.filter((id) => id !== trackId)
@@ -85,12 +91,6 @@ const AddPlayList = () => {
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
-      if (isEdit) {
-        formData.append("users", user.id);
-      } else {
-        formData.append("user_id", user.id);
-      }
-
       if (coverImage) formData.append("cover_image", coverImage);
 
       if (isEdit && currentId) {
@@ -121,12 +121,14 @@ const AddPlayList = () => {
         toast.success("Tạo playlist thành công");
       }
 
-      dispatch(getPlaylist() as any);
+      dispatch(getPlaylist(page, 20) as any);
 
       setOpenModal(false);
     } catch (error) {
       console.log(error);
-      toast.error("Có lỗi xảy ra. Vui lòng thử lại.");
+      toast.error(
+        uploadErrorMessage(error, "Có lỗi xảy ra. Vui lòng thử lại.")
+      );
     }
   };
 
@@ -136,7 +138,9 @@ const AddPlayList = () => {
       <div className="w-full mb-3 flex justify-between">
         {" "}
         <h2 className="text-xl font-semibold">Danh sách Playlist</h2>{" "}
-        <Button onClick={handleOpenCreate}>Add Playlist +</Button>{" "}
+        <Can permission="playlists:create">
+          <Button onClick={handleOpenCreate}>Add Playlist +</Button>
+        </Can>{" "}
       </div>
       <div className="rounded-xl border shadow-sm overflow-hidden">
         <div className="overflow-y-auto">
@@ -164,15 +168,7 @@ const AddPlayList = () => {
                     <TableCell>
                       <Avatar className="h-12 w-12 rounded-md">
                         <AvatarImage
-                          src={
-                            item.cover_image
-                              ? item.cover_image.startsWith("http")
-                                ? item.cover_image
-                                : `${import.meta.env.VITE_SERVER_API}${
-                                    item.cover_image
-                                  }`
-                              : "/default-image.jpg"
-                          }
+                          src={mediaUrl(item.cover_image)}
                           className="object-cover"
                         />
                         <AvatarFallback>PL</AvatarFallback>
@@ -187,22 +183,26 @@ const AddPlayList = () => {
                     <TableCell>{item.is_public === 1 ? "Yes" : "No"}</TableCell>
                     <TableCell>
                       <div className="flex justify-center gap-2">
-                        {item?.users.id === user?.id && (
+                        {
+                          <Can permission="playlists:update">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenEdit(item)}
+                            >
+                              Update
+                            </Button>
+                          </Can>
+                        }
+                        <Can permission="playlists:delete">
                           <Button
-                            variant="outline"
+                            variant="destructive"
                             size="sm"
-                            onClick={() => handleOpenEdit(item)}
+                            onClick={() => handleDelete(item.id)}
                           >
-                            Update
+                            Delete
                           </Button>
-                        )}
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          Delete
-                        </Button>
+                        </Can>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -218,6 +218,7 @@ const AddPlayList = () => {
           </Table>
         </div>
       </div>
+      <PaginationControls meta={meta} onPageChange={setPage} />
       {/* Dialog */}
       <Dialog open={openModal} onOpenChange={setOpenModal}>
         <DialogContent>
@@ -263,9 +264,11 @@ const AddPlayList = () => {
             <Button variant="outline" onClick={() => setOpenModal(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmit}>
-              {isEdit ? "Update" : "Create"}
-            </Button>
+            <Can permission={isEdit ? "playlists:update" : "playlists:create"}>
+              <Button onClick={handleSubmit}>
+                {isEdit ? "Update" : "Create"}
+              </Button>
+            </Can>
           </DialogFooter>
         </DialogContent>
       </Dialog>

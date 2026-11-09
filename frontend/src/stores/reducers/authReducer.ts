@@ -1,11 +1,14 @@
 import actionTypes from "../actions/actionTypes";
+import { emptyPagination } from "../../types/pagination";
 
 const initialState = {
   user: null,
   allUser: [] as any[],
   lockUser: [] as any[],
-  accessToken: null,
-  refreshToken: null,
+  allUserMeta: emptyPagination,
+  lockUserMeta: emptyPagination,
+  accessToken: localStorage.getItem("accessToken"),
+  refreshToken: localStorage.getItem("refreshToken"),
   loading: false,
   error: null,
   isAuthenticated: false,
@@ -30,11 +33,11 @@ const authReducer = (state = initialState, action: any) => {
       return {
         ...state,
         loading: false,
-        isAuthenticated: true,
-        user: action.payload.user,
-        accessToken: action.payload.accessToken,
-        refreshToken: action.payload.refreshToken,
+        error: null,
       };
+
+    case actionTypes.REGISTER_FAIL:
+      return { ...state, loading: false, error: action.payload };
 
     case actionTypes.LOGIN_FAILURE:
       return { ...state, loading: false, error: action.payload };
@@ -49,7 +52,6 @@ const authReducer = (state = initialState, action: any) => {
         error: null,
         isAuthenticated: false,
       };
-
 
     case actionTypes.UPDATE_USER_REQUEST:
       return { ...state, loading: true, error: null };
@@ -69,17 +71,27 @@ const authReducer = (state = initialState, action: any) => {
       return { ...state, loading: true, error: null };
 
     case actionTypes.GET_ALL_USERS_SUCCESS:
-      return { ...state, loading: false, allUser: action.payload };
+      return {
+        ...state,
+        loading: false,
+        allUser: action.payload,
+        allUserMeta: action.meta,
+      };
 
     case actionTypes.GET_ALL_USERS_FAILURE:
       return { ...state, loading: false, error: action.payload };
 
-    case actionTypes.GET_LOCKED_USERS_REQUEST:  
+    case actionTypes.GET_LOCKED_USERS_REQUEST:
       return { ...state, loading: true, error: null };
     case actionTypes.GET_LOCKED_USERS_SUCCESS:
-      return { ...state, loading: false, lockUser: action.payload };
+      return {
+        ...state,
+        loading: false,
+        lockUser: action.payload,
+        lockUserMeta: action.meta,
+      };
     case actionTypes.GET_LOCKED_USERS_FAILURE:
-      return { ...state, loading: false, error: action.payload }; 
+      return { ...state, loading: false, error: action.payload };
 
     default:
       return state;

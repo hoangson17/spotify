@@ -1,32 +1,32 @@
-import { getPlaylistById } from "@/stores/actions/playlistActions";
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useParams } from "react-router-dom";
-import { Play, MoreHorizontal, Heart, Download, Shuffle } from "lucide-react";
-import { queue, setCurrentSong } from "@/stores/actions/playerActions";
-import { trackService } from "@/services/trackService";
-import { playlistService } from "@/services/playlistService";
 import { Button } from "@/components/ui/button";
+import { playlistService } from "@/services/playlistService";
+import { trackService } from "@/services/trackService";
+import { queue } from "@/stores/actions/playerActions";
+import { getPlaylistById } from "@/stores/actions/playlistActions";
+import { Heart,MoreHorizontal,Play } from "lucide-react";
+import React,{ useEffect } from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import music from "../../assets/music.jpg";
+import { Footer } from "@/components";
+import { mediaUrl, useFallbackImage } from "@/utils/media";
+import { DetailSkeleton } from "@/components/CatalogSkeleton";
 
 const Playlist = () => {
   const dispatch = useDispatch();
-  const { playlist } = useSelector((state: any) => state.playlist);
-  const { playlistId } = useSelector((state: any) => state.playlist);
+  const { playlistId, loading } = useSelector((state: any) => state.playlist);
   // console.log(tracks);
   const [search, setSearch] = React.useState("");
   const [results, setResults] = React.useState([]);
   const [isShowSearch, setIsShowSearch] = React.useState(true);
-  const auth = localStorage.getItem("persist:auth");
-  const user = auth ? JSON.parse(JSON.parse(auth).user) : null;
+  const user = useSelector((state: any) => state.auth.user);
   console.log(playlistId);
 
   const { id } = useParams();
-  const location = useLocation();
 
   const handlePlayTrack = (track: any) => dispatch(queue([track]));
-  const handlePlayTracks = () => dispatch(queue(playlistId.tracks));
+  const handlePlayTracks = () => dispatch(queue(playlistId?.tracks ?? []));
   useEffect(() => {
     if (!search.trim()) {
       setResults([]);
@@ -34,8 +34,8 @@ const Playlist = () => {
     }
 
     const timeout = setTimeout(async () => {
-      const res = await trackService.search(search);
-      setResults(res.data);
+      const res = await trackService.search(search, { page: 1, limit: 20 });
+      setResults(res.data.items);
     }, 300);
 
     return () => clearTimeout(timeout);
@@ -43,17 +43,19 @@ const Playlist = () => {
 
   useEffect(() => {
     if (!id) return;
-    dispatch(getPlaylistById(Number(id)) as any);
-  }, [id, location.pathname, playlist]);
+    dispatch(getPlaylistById(id) as any);
+  }, [id, dispatch]);
 
-  const handleAddTrack = async (trackIds: number) => {
+  if (loading || !playlistId?.id) return <DetailSkeleton />;
+
+  const handleAddTrack = async (trackIds: string) => {
     if (!trackIds) return;
 
     try {
       console.log("Adding track:", trackIds, "to playlist:", id);
 
-      const res = await playlistService.addTrack(user.id,Number(id), [trackIds]);
-      await dispatch(getPlaylistById(Number(id)) as any);
+      await playlistService.addTrack(user.id, id as string, [trackIds]);
+      await dispatch(getPlaylistById(id as string) as any);
       toast.success(`Thêm bài hát thành công`);
     } catch (error: any) {
       toast.error("có lỗi khi thêm bài hát");
@@ -67,7 +69,8 @@ const Playlist = () => {
         {playlistId?.id && (
           <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
             <img
-              src={ playlistId.cover_image ? (playlistId.cover_image.startsWith("http") ? playlistId.cover_image : `${import.meta.env.VITE_SERVER_API}${playlistId.cover_image}`) : music} 
+              src={mediaUrl(playlistId.cover_image, music)}
+              onError={(event) => useFallbackImage(event, music)}
               className="w-48 h-48 rounded shadow-lg object-cover"
               alt=""
             />
@@ -89,7 +92,7 @@ const Playlist = () => {
           </div>
         )}
         {/* SEARCH */}
-        {isShowSearch && user.id === playlistId?.users.id && (
+        {isShowSearch && user?.id === playlistId?.users?.id && (
           <div className="px-6 py-6 border-b border-white/10">
             <h2 className="text-xl font-semibold mb-3">
               Let's find something for your playlist
@@ -121,7 +124,8 @@ const Playlist = () => {
                   >
                     <div className="flex items-center gap-3">
                       <img
-                        src={ track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
+                        src={mediaUrl(track.image_url, music)}
+                        onError={(event) => useFallbackImage(event, music)}
                         className="w-10 h-10 rounded object-cover"
                       />
                       <div>
@@ -186,7 +190,8 @@ const Playlist = () => {
 
               <div className="flex items-center gap-3">
                 <img
-                  src={track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}` || music}
+                  src={mediaUrl(track.image_url, music)}
+                  onError={(event) => useFallbackImage(event, music)}
                   className="w-10 h-10 rounded object-cover"
                 />
                 <div>
@@ -200,6 +205,7 @@ const Playlist = () => {
           </div>
         ))}
       </div>
+      <Footer />
     </div>
   );
 };

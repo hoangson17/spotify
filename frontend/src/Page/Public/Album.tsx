@@ -1,19 +1,22 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { Link, useParams } from "react-router-dom";
-import { Play, Heart, MoreHorizontal } from "lucide-react";
 import { getAlbumById } from "@/stores/actions/albumActions";
-import { queue, setCurrentSong } from "@/stores/actions/playerActions";
+import { queue } from "@/stores/actions/playerActions";
+import { Heart,MoreHorizontal,Play } from "lucide-react";
+import { useEffect } from "react";
+import { useDispatch,useSelector } from "react-redux";
+import { Link,useParams } from "react-router-dom";
 import music from "../../assets/music.jpg";
+import { Footer } from "@/components";
+import { mediaUrl, useFallbackImage } from "@/utils/media";
+import { DetailSkeleton } from "@/components/CatalogSkeleton";
 
 const Album = () => {
   const dispatch = useDispatch();
   const { id } = useParams();
-  const { albums } = useSelector((state: any) => state.albums);
+  const { albums, loading } = useSelector((state: any) => state.albums);
   const album = albums; // Rename for clarity
 
   useEffect(() => {
-    if (id) dispatch(getAlbumById(Number(id)) as any);
+    if (id) dispatch(getAlbumById(id) as any);
   }, [id]);
   
   const handlePlayTrack = (track: any) => dispatch(queue([track]));
@@ -31,16 +34,15 @@ const Album = () => {
   //   }
   // };
 
-  if (!album) {
-    return <div className="text-center py-10 text-gray-400">Loading album...</div>;
-  }
+  if (loading || !album || Array.isArray(album)) return <DetailSkeleton />;
 
   return (
     <div className="relative text-white fade-in">
       {/* HEADER */}
       <div className="flex items-end gap-6 p-6 bg-gradient-to-b from-[#3d3d3d] to-transparent">
         <img
-          src={ album.cover_image ? album.cover_image.startsWith('http') ? album.cover_image : `${import.meta.env.VITE_SERVER_API}${album.cover_image}` : music}
+          src={mediaUrl(album.cover_image, music)}
+          onError={(event) => useFallbackImage(event, music)}
           alt={album.title}
           className="w-48 h-48 rounded shadow-lg object-cover"
         />
@@ -84,7 +86,7 @@ const Album = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <img src={ track.image_url ? track.image_url.startsWith("http") ? track.image_url : `${import.meta.env.VITE_SERVER_API}${track.image_url}`   : music} className="w-10 h-10 rounded object-cover" />
+            <img src={mediaUrl(track.image_url, music)} onError={(event) => useFallbackImage(event, music)} className="w-10 h-10 rounded object-cover" />
             <p className="font-medium">{track.title}</p>
           </div>
 
@@ -100,13 +102,15 @@ const Album = () => {
             className="group cursor-pointer hover:bg-white/10 p-3 rounded-lg transition inline-block"
           >
             <img
-              src={ album.cover_image? album.artist.avatar.startsWith('http') ? album.artist.avatar : `${import.meta.env.VITE_SERVER_API}${album.artist.avatar}` : music}
+              src={mediaUrl(album.artist?.avatar, music)}
+              onError={(event) => useFallbackImage(event, music)}
               className="w-44 h-44 object-cover rounded-lg shadow"
             />
             <p className="font-medium mt-3">{album.artist.name}</p>
           </Link>
         </div>
       )}
+      <Footer />
     </div>
   );
 };

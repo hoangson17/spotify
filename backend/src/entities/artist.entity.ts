@@ -13,26 +13,26 @@ import { Follower } from './follower.entity';
  
 @Entity('artists')
 export class Artist {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({
     type: 'varchar',
     length: 40,
   })
-  name: string;
+  name!: string;
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  bio: string;
+  bio!: string;
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  avatar: string;
+  avatar!: string;
 
   @ManyToMany(() => Track, (track) => track.artists)
   @JoinTable({
@@ -46,32 +46,32 @@ export class Artist {
       referencedColumnName: 'id',
     },
   })
-  tracks: Track[];
+  tracks!: Track[];
 
   @OneToMany(() => Album, (album) => album.artist)
-  albums: Album[];
+  albums!: Album[];
 
   @OneToMany(() => Follower, (follower) => follower.artist)
-  followers: Follower[];
+  followers!: Follower[];
 
   @Column({
     type: 'varchar',
     length: 100,
     nullable: true,
   })
-  country: string;
+  country?: string;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  created_at: Date;
+  created_at!: Date;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  updated_at: Date;
+  updated_at!: Date;
 
   @DeleteDateColumn({ nullable: true })
   deletedAt?: Date;

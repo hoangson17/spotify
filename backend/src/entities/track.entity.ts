@@ -1,8 +1,6 @@
 import {
   Column,
   Entity,
-  JoinColumn,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
@@ -11,67 +9,73 @@ import { Artist } from './artist.entity';
 import { Album } from './album.entity';
 import { Playlist } from './playlist.entity';
 import { User } from './user.entity';
+import { Category } from './category.entity';
 
 @Entity('tracks')
 export class Track {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
 
   @Column({
     type: 'varchar',
     length: 100,
   })
-  title: string;
+  title!: string;
 
   @ManyToOne(() => Album, (album) => album.tracks, {
     onDelete: 'SET NULL',
     nullable: true,
   })
-  album: Album;
+  album!: Album;
 
+  @ManyToOne(() => Category, (category) => category.tracks, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  category?: Category | null;
 
   @ManyToMany(() => Artist, (artist) => artist.tracks, { onDelete: 'CASCADE' })
-  artists: Artist[];
+  artists!: Artist[];
 
   @ManyToMany(() => Playlist, (playlist) => playlist.tracks, {
     onDelete: 'CASCADE',
   })
-  playlists: Playlist[];
+  playlists!: Playlist[];
 
   @ManyToMany(() => User, (user) => user.tracks, { onDelete: 'CASCADE' })
-  users: User[];
+  users!: User[];
 
   @Column({
     type: 'int',
   })
-  duration: number;
+  duration!: number;
 
   @Column({
     type: 'text',
     nullable: true,
   })
-  image_url: string;
+  image_url?: string;
 
   @Column({
     type: 'text',
   })
-  audio_url: string;
+  audio_url!: string;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  created_at: Date;
+  created_at!: Date;
 
   @Column({
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
   })
-  updated_at: Date;
+  updated_at!: Date;
 
   @Column({
     type: 'timestamp',
     nullable: true,
   })
-  deleted_at: Date;
+  deleted_at?: Date;
 }

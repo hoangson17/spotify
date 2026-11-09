@@ -1,28 +1,40 @@
 import axiosInstance from "../axiosConfig";
+import type { AxiosProgressEvent } from "axios";
+import type { PaginationParams } from "@/types/pagination";
 
 export const trackService = {
-    getAllTracks() {
-        return axiosInstance.get("/track");
+    getAllTracks(params: PaginationParams & { categoryId?: string } = {}) {
+        return axiosInstance.get("/track", { params });
     },
-    search: (keyword:any) => axiosInstance.get(`/track/search?keyword=${keyword}`),
+    search: (keyword: string, params: PaginationParams = {}) =>
+        axiosInstance.get("/track/search", { params: { keyword, ...params } }),
 
-    createTrack: (formData: FormData) => axiosInstance.post('/track', formData, {
+    createTrack: (
+      formData: FormData,
+      onUploadProgress?: (event: AxiosProgressEvent) => void,
+    ) => axiosInstance.post('/track', formData, {
         headers: {
           "Content-Type": "multipart/form-data", // axios sẽ tự set boundary
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+
         },
+        onUploadProgress,
     }),
 
-    updateTrack: (id: number, data: any) => axiosInstance.patch(`/track/${id}`, data, {
+    updateTrack: (
+      id: string,
+      data: FormData,
+      onUploadProgress?: (event: AxiosProgressEvent) => void,
+    ) => axiosInstance.patch(`/track/${id}`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+
         },
+        onUploadProgress,
     }),
 
-    deleteTrack: (id: number) => axiosInstance.delete(`/track/${id}`, {
+    deleteTrack: (id: string) => axiosInstance.delete(`/track/${id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+
         },
     }),
 
